@@ -1,0 +1,36 @@
+model_parameters:
+    nn_layer:
+      - name: Conv1D
+        other_settings: 5, (3, ) 
+        activation: "'relu'"
+        kernel_initializer: "'he_uniform'"
+        input_shape: '(39, 1)' #len(data_X[0])
+
+      #- name: MaxPooling2D
+      #  other_settings: '(2, 2)'
+
+      - name: Flatten
+
+      - name: Dense
+        other_settings: '100'
+        activation: "'relu'"
+        kernel_initializer: "'he_uniform'"
+
+      - name: Dense
+        other_settings: '13' #len(data_Y[0])
+        activation: "'softsign'"
+
+    optimizer:
+        name: 'SGD'
+        learning_rate: '0.01'
+        momentum: '0.9'
+
+    model_compile:
+        optimizer: ''
+        loss: "'binary_crossentropy'"
+        metrics: "['accuracy']"
+
+train_model_settings:
+    n_folds: 5
+    epochs: 10
+    batch_size: 32

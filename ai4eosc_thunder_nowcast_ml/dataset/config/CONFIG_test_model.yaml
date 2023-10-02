@@ -1,0 +1,14 @@
+all_data_models: ('titan', 'cotrec', 'persistence')
+all_data_sources: ('cappi2000', 'vil')
+measurements: 'measurements'
+time_tolerance: 60000 # in milliseconds
+forecast_time: 5 # in minutes
+threshold_value: '(10, 1, 0)' # first - threshold value, second - more or equal than threshold, third - less than threshold
+use_columns: '("timestamp", "forecast")'
+ORP_list: '("ORP1", "ORP2", "ORP3", "ORP4", "ORP5", "ORP6", "ORP7", "ORP8", "ORP9", "ORP10", "ORP11", "ORP12", "ORP13")'
+
+test:
+    seasons:
+      - years: '(2019,)'
+        months: '()'
+        days: '()'
