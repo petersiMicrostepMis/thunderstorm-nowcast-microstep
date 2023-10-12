@@ -6,6 +6,9 @@ Integrate a model with the DEEP API
 import json
 import argparse
 import pkg_resources
+import tempfile
+import mimetypes
+import subprocess
 
 import os
 import sys
@@ -25,8 +28,8 @@ from aiohttp.web import HTTPBadRequest
 from functools import wraps
 
 ## Authorization
-# from flaat import Flaat
-# flaat = Flaat()
+#from flaat import Flaat
+#flaat = Flaat()
 
 currentFuncName = lambda n=0: sys._getframe(n + 1).f_code.co_name
 
@@ -264,6 +267,7 @@ def get_predict_args():
 
 @_catch_error
 def predict(**kwargs):
+#def train(**kwargs):
     """
     Function to execute prediction
     https://docs.deep-hybrid-datacloud.eu/projects/deepaas/en/latest/user/v2-api.html#deepaas.model.v2.base.BaseModel.predict
@@ -275,69 +279,99 @@ def predict(**kwargs):
     #        all([kwargs['urls'], kwargs['files']])):
     #    raise Exception("You must provide either 'url' or 'data' in the payload")
 
-    #if kwargs['files']:
-    #    kwargs['files'] = [kwargs['files']]  # patch until list is available
-    #    return _predict_data(kwargs)
-    #elif kwargs['urls']:
-    #    kwargs['urls'] = [kwargs['urls']]  # patch until list is available
-    #    return _predict_url(kwargs)
+    # output dir
+    os.mkdir(cfg.WORK_SAVE_DIR("predict"))
 
-    message = { "status": "ok",
-                "training": [],
-              }
+    data_input_targz = os.path.join(cfg.SERVER_DATA_DIR, "input_data.tar.gz")
+    config_yaml_path = cfg.CONFIG_YAML_PATH
+    config_model_yaml_path = cfg.CONFIG_MODEL_YAML_PATH("predict")
+    model_path = os.path.join(cfg.SERVER_DATA_DIR, "model.h5")
 
-    # use the schema
-    schema = cfg.PredictArgsSchema()
-    # deserialize key-word arguments
-    predict_args = schema.load(kwargs)
+    if kwargs['data_tar']:
+        kwargs['data_tar'] = [kwargs['data_tar']]
+        for a in kwargs['data_tar']:
+            data_input_targz = a.filename
     
-    predict_results = { "Error": "No model implemented for predict (predict())" }
-    message["predict"].append(predict_results)
+    if kwargs['config_yaml']:
+        kwargs['config_yaml'] = [kwargs['config_yaml']]
+        for a in kwargs['config_yaml']:
+            config_yaml_path = a.filename
 
-    # model_path
-    model_path = set_kwargs("model_path", arg2="train", **kwargs)
+    if kwargs['config_yaml_model']:
+        kwargs['config_yaml_model'] = [kwargs['config_yaml_model']]
+        for a in kwargs['config_yaml_model']:
+            config_model_yaml_path = a.filename
 
-    # rclone_nextcloud
-    rclone_nextcloud = set_kwargs("rclone_nextcloud", **kwargs)
-
-    # config_yaml_path
-    config_yaml_path = set_kwargs("config_yaml_path", **kwargs)
-
-    # config_model_yaml_path
-    config_model_yaml_path = set_kwargs("config_model_yaml_path", arg2="predict", **kwargs)
+    if kwargs['model_h5_file']:
+        kwargs['model_h5_file'] = [kwargs['model_h5_file']]
+        for a in kwargs['model_h5_file']:
+            model_path = a.filename
+    try:
+        shutil.rmtree(cfg.DOWNLOADS_TMP)
+    except:
+    os.mkdir(cfg.DOWNLOADS_TMP)
+    shutil.copy(data_input_targz, cfg.DOWNLOADS_TMP + "/input.tar.gz")
+    subprocess.run("tar -xzvf " + cfg.DOWNLOADS_TMP + "/input.tar.gz --directory " + cfg.DOWNLOADS_TMP,
+                   shell=True, check=True, executable='/bin/bash')
+    data_input_source = cfg.DOWNLOADS_TMP + "/input.tar.gz"
+    
+    shutil.copy(config_yaml_path, cfg.WORK_SAVE_DIR("predict") + "/CONFIG_NN.yaml")
+    config_yaml_path = cfg.WORK_SAVE_DIR("predict") + "/CONFIG_NN.yaml"
+    shutil.copy(config_model_yaml_path, cfg.WORK_SAVE_DIR("predict") + "/CONFIG_model.yaml")
+    config_model_yaml_path = cfg.WORK_SAVE_DIR("predict") + "/CONFIG_model.yaml"
+    shutil.copy(model_path, cfg.WORK_SAVE_DIR("predict") + "/model.h5")
+    model_path = cfg.WORK_SAVE_DIR("predict") + "/model.h5"
 
     # CONFIG.yaml
     config_yaml = load_config_yaml_file(config_yaml_path)
     config_model_yaml = load_config_yaml_file(config_model_yaml_path)
 
+    # delete old files in working_dir (only with .csv extension)
+    mutils.delete_old_files(cfg.RAW_DATA_DIR, ".csv")
+    mutils.delete_old_files(cfg.TRAIN_DIR, ".csv")
+    mutils.delete_old_files(cfg.TEST_DIR, ".csv")
+    mutils.delete_old_files(cfg.VALIDATION_DIR, ".csv")
+
     # prepare data
+    print(f"prepare_data_predict({cfg.DOWNLOADS_TMP}, {cfg.RAW_DATA_DIR}, {cfg.PREDICT_FILE}, {config_model_yaml})")
+    bf.prepare_data_predict(cfg.DOWNLOADS_TMP, cfg.RAW_DATA_DIR, cfg.PREDICT_FILE, config_model_yaml)
     dataPredictX, dataPredictY = mutils.make_dataset(cfg.PREDICT_FILE, config_model_yaml)
-
-    # output dir
-    os.mkdir(cfg.WORK_SAVE_DIR("predict"))
-
     # copy data to output
     shutil.copy(cfg.PREDICT_FILE, cfg.WORK_SAVE_DIR("predict"))
-    shutil.copy(config_yaml_path, cfg.WORK_SAVE_DIR("predict"))
-    shutil.copy(config_model_yaml_path, cfg.WORK_SAVE_DIR("predict"))
-    shutil.copy(model_path, cfg.WORK_SAVE_DIR("predict"))
-
     # load model
     modelLoad = mutils.load_model(model_path, config_yaml)
     # predictions model
     prediction = mutils.test_model(modelLoad, dataPredictX)
     print(prediction)
-
+   
+    message = { "status": "ok",
+                "training": []}
     return message
 
+
+def load_files(s, *arg):
+    files = []
+    for arg in args:
+        file_objs = arg['files']
+        for f in file_objs:
+            files.append(f.filename)
+    return files
 
 def _predict_data(*args):
     """
     (Optional) Helper function to make prediction on an uploaded file
     """
-    message = 'Not implemented (predict_data())'
-    message = {"Error": message}
-    return message
+    #message = 'Not implemented (predict_data())'
+    #message = {"Error": message}
+    files = []
+    file_inputs = ['data_tar', 'config_yaml', 'config_yaml_model', 'model_h5_file']
+    for arg in args:
+        for f_i in file_inputs:
+            file_objs = arg[f_i]
+            for f in file_objs:
+                files.append({f_i: f.filename})
+
+    return files #message
 
 
 def _predict_url(*args):
@@ -425,6 +459,7 @@ def get_train_args():
 ###
 #@flaat.login_required() # Allows only authorized people to train
 def train(**kwargs):
+#def predict(**kwargs):
     """
     Train network
     https://docs.deep-hybrid-datacloud.eu/projects/deepaas/en/latest/user/v2-api.html#deepaas.model.v2.base.BaseModel.train
@@ -437,49 +472,104 @@ def train(**kwargs):
               }
 
     # use the schema
-    schema = cfg.TrainArgsSchema()
+    #schema = cfg.TrainArgsSchema()
     # deserialize key-word arguments
-    train_args = schema.load(kwargs)
+    #train_args = schema.load(kwargs)
     
+    os.mkdir(cfg.WORK_SAVE_DIR("train"))
+
+    data_input_targz = os.path.join(cfg.SERVER_DATA_DIR, "input_data.tar.gz")
+    config_yaml_path = cfg.CONFIG_YAML_PATH
+    config_model_yaml_path = cfg.CONFIG_MODEL_YAML_PATH("train_model")
+
+    try:
+        shutil.rmtree(cfg.DOWNLOADS_TMP)
+    except:
+        print("dbvisu")
+    os.mkdir(cfg.DOWNLOADS_TMP)
+    shutil.copy(data_input_targz, cfg.DOWNLOADS_TMP + "/input.tar.gz")
+    subprocess.run("tar -xzvf " + cfg.DOWNLOADS_TMP + "/input.tar.gz --directory " + cfg.DOWNLOADS_TMP,
+                   shell=True, check=True, executable='/bin/bash')
+    data_input_source = cfg.DOWNLOADS_TMP + "/input.tar.gz"
+    
+    shutil.copy(config_yaml_path, cfg.WORK_SAVE_DIR("train") + "/CONFIG_NN.yaml")
+    config_yaml_path = cfg.WORK_SAVE_DIR("train") + "/CONFIG_NN.yaml"
+    shutil.copy(config_model_yaml_path, cfg.WORK_SAVE_DIR("train") + "/CONFIG_model.yaml")
+    config_model_yaml_path = cfg.WORK_SAVE_DIR("train") + "/CONFIG_model.yaml"
+
+    model_path = cfg.WORK_SAVE_DIR("train") + "/model.h5"
+
+    # CONFIG.yaml
+    config_yaml = load_config_yaml_file(config_yaml_path)
+    config_model_yaml = load_config_yaml_file(config_model_yaml_path)
+
+    # delete old files in working_dir (only with .csv extension)
+    mutils.delete_old_files(cfg.RAW_DATA_DIR, ".csv")
+    mutils.delete_old_files(cfg.TRAIN_DIR, ".csv")
+    mutils.delete_old_files(cfg.TEST_DIR, ".csv")
+    mutils.delete_old_files(cfg.VALIDATION_DIR, ".csv")
+
+    # prepare data
+    print(f"prepare_data_train({cfg.DOWNLOADS_TMP}, {cfg.RAW_DATA_DIR}, {cfg.TRAIN_FILE}, {cfg.TEST_FILE}, {cfg.VALIDATION_FILE}, {config_model_yaml})")
+    bf.prepare_data_train(cfg.DOWNLOADS_TMP, cfg.RAW_DATA_DIR, cfg.TRAIN_FILE, cfg.TEST_FILE, cfg.VALIDATION_FILE, config_model_yaml)
+
+    # prepare data
+    dataTrainX, dataTrainY = mutils.make_dataset(cfg.TRAIN_FILE, config_model_yaml)
+
+    # copy data to output
+    shutil.copy(cfg.TRAIN_FILE, cfg.WORK_SAVE_DIR("train"))
+    shutil.copy(cfg.TEST_FILE, cfg.WORK_SAVE_DIR("train"))
+    shutil.copy(cfg.VALIDATION_FILE, cfg.WORK_SAVE_DIR("train"))
+    # model training
+    trainScores, trainHistories, trainModels = mutils.train_model(
+        dataTrainX, dataTrainY, config_yaml
+    )
+    # model saving
+    mutils.save_model(trainModels[1], model_path)
     train_results = { "Error": "No model implemented for training (train())" }
     message["training"].append(train_results)
+    return(message)
 
     # model_path
     model_path = set_kwargs("model_path", arg2="train", **kwargs)
 
     # rclone_nextcloud
     rclone_nextcloud = set_kwargs("rclone_nextcloud", **kwargs)
-
     # config_yaml_path
-    config_yaml_path = set_kwargs("config_yaml_path", **kwargs)
+    #config_yaml_path = set_kwargs("config_yaml_path", **kwargs)
+
+    kwargs['files'] = [kwargs['files']]
+    #kwargs['config_model_yaml'] = [kwargs['config_model_yaml']]
+    config_yaml = load_files(kwargs)
+    #config_model_yaml = load_files('config_model_yaml', kwargs)
 
     # config_model_yaml_path
-    config_model_yaml_path = set_kwargs("config_model_yaml_path", arg2="train", **kwargs)
+    #config_model_yaml_path = set_kwargs("config_model_yaml_path", arg2="train", **kwargs)
 
     # CONFIG.yaml
-    config_yaml = load_config_yaml_file(config_yaml_path)
-    config_model_yaml = load_config_yaml_file(config_model_yaml_path)
+    #config_yaml = load_config_yaml_file(config_yaml_path)
+    #config_model_yaml = load_config_yaml_file(config_model_yaml_path)
 
     # prepare data
-    dataTrainX, dataTrainY = mutils.make_dataset(cfg.TRAIN_FILE, config_model_yaml)
+    #dataTrainX, dataTrainY = mutils.make_dataset(cfg.TRAIN_FILE, config_model_yaml)
 
     # output dir
-    os.mkdir(cfg.WORK_SAVE_DIR("train"))
+    #os.mkdir(cfg.WORK_SAVE_DIR("train"))
 
     # copy data to output
-    shutil.copy(cfg.TRAIN_FILE, cfg.WORK_SAVE_DIR("train"))
-    shutil.copy(cfg.TEST_FILE, cfg.WORK_SAVE_DIR("train"))
-    shutil.copy(cfg.VALIDATION_FILE, cfg.WORK_SAVE_DIR("train"))
-    shutil.copy(config_yaml_path, cfg.WORK_SAVE_DIR("train"))
-    shutil.copy(config_model_yaml_path, cfg.WORK_SAVE_DIR("train"))
+    #shutil.copy(cfg.TRAIN_FILE, cfg.WORK_SAVE_DIR("train"))
+    #shutil.copy(cfg.TEST_FILE, cfg.WORK_SAVE_DIR("train"))
+    #shutil.copy(cfg.VALIDATION_FILE, cfg.WORK_SAVE_DIR("train"))
+    #shutil.copy(config_yaml_path, cfg.WORK_SAVE_DIR("train"))
+    #shutil.copy(config_model_yaml_path, cfg.WORK_SAVE_DIR("train"))
 
     # model training
-    trainScores, trainHistories, trainModels = mutils.train_model(
-        dataTrainX, dataTrainY, config_yaml
-    )
+    #trainScores, trainHistories, trainModels = mutils.train_model(
+    #    dataTrainX, dataTrainY, config_yaml
+    #)
 
     # model saving
-    mutils.save_model(trainModels[1], model_path)
+    #mutils.save_model(trainModels[1], model_path)
 
     return message
 
@@ -505,6 +595,27 @@ def main():
         print(json.dumps(results))
         return results
     elif args.method == 'predict':
+        #if args.files:
+            # create tmp file as later it will be deleted
+            #print('abc')
+            #temp = tempfile.NamedTemporaryFile()
+            #temp.close()
+            # copy original file into tmp file
+            #print(args.files)
+            #with open(args.files, "rb") as f:
+            #    print(f)
+            #    with open(temp.name, "wb") as f_tmp:
+            #        print(temp.name)
+            #        for line in f:
+            #            f_tmp.write(line)
+        
+            # create file object to mimic aiohttp workflow
+            #file_obj = wrapper.UploadedFile(name="data1", 
+            #                                filename = temp.name,
+            #                                content_type=mimetypes.MimeTypes().guess_type(args.files)[0],
+            #                                original_filename=args.files)
+            #args.files = file_obj
+        
         # [!] you may need to take special care in the case of args.files [!]
         results = predict(**vars(args))
         print(json.dumps(results))

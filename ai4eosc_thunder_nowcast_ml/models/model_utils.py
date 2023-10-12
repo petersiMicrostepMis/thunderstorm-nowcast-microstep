@@ -3,8 +3,6 @@ import subprocess
 import warnings
 import os
 import yaml
-import number_recognition.config as cfg
-import cv2
 import numpy as np
 import pandas as pd
 from sklearn.model_selection import KFold
@@ -128,7 +126,6 @@ def define_model(parameters):  # dotiahnut hodnoty z configu
         s = ", ".join(s)
         s = layerName + "(" + s + ")"
         eval("model.add(" + s + ")")
-    
     # optimizer settings
     opt = parameters["optimizer"]
     keys = opt.keys()
@@ -145,22 +142,23 @@ def define_model(parameters):  # dotiahnut hodnoty z configu
     s = ", ".join(s)
     s = optName + "(" + s + ")"
     optimizer = s
-    
     # model compile
     mcompile = parameters["model_compile"]
     keys = mcompile.keys()
     otherSettings = []
     s = list()
+    print(f"optimizer0 == {optimizer}")
     for key in keys:
         if key == "optimizer":
             if mcompile["optimizer"] != "":
                 optimizer = mcompile["optimizer"]
-            optimizer = "optimizer = " + optimizer
+            optimizer = ["optimizer = " + optimizer,]
+            #print(f"optimizer == {optimizer}")
         elif key == "other_settings":
             otherSettings = [mcompile["other_settings"]]
         else:
             s.append(key + "=" + mcompile[key])
-    s = otherSettings + s
+    s = otherSettings + optimizer + s
     s = ", ".join(s)
     eval("model.compile(" + s + ")")
     return model
@@ -181,6 +179,7 @@ def train_model(dataX, dataY, parameters):
         testX = [dataX[test_ix[i]] for i in range(len(test_ix))]
         testY = [dataY[test_ix[i]] for i in range(len(test_ix))]
         #testX, testY = dataX[test_ix], dataY[test_ix]  # select rows for test
+
         history = model.fit(
             trainX,
             trainY,
