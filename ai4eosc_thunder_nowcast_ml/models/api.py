@@ -9,8 +9,11 @@ import pkg_resources
 import tempfile
 import mimetypes
 import subprocess
+import tarfile
+import datetime
 
 import os
+from io import BytesIO
 import sys
 import shutil
 base_directory = os.path.dirname(os.path.abspath(__file__))
@@ -36,7 +39,7 @@ currentFuncName = lambda n=0: sys._getframe(n + 1).f_code.co_name
 def print_log(log_line, verbose=True, time_stamp=True):
     tm = ""
     if time_stamp:
-        tm = datetime.now().strftime("%Y-%m-%d %H:%M:%S: ")
+        tm = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S: ")
     if verbose:
         print(tm + log_line)
 
@@ -90,7 +93,9 @@ def load_config_yaml_file(config_yaml_path):
     return config_yaml
 
 
-def set_string_argument(arg_name, arg_default_value, **kwargs):
+def set_string_argument(arg_name, arg_default_value, preffix="", **kwargs):
+    print(arg_name)
+    print(arg_default_value)
     try:
         if not kwargs[arg_name] is None and kwargs[arg_name] != "":
             string_argument = kwargs[arg_name]
@@ -99,32 +104,59 @@ def set_string_argument(arg_name, arg_default_value, **kwargs):
             string_argument = arg_default_value
     except Exception:
         string_argument = arg_default_value
-    return string_argument
+    print(string_argument)
+    return preffix + string_argument
 
 
 def set_bool_argument(arg_name, arg_default_value, **kwargs):
     bool_argument = arg_default_value
     try:
-        bool_argument = eval(kwargs[arg_name])
+        bool_argument = kwargs[arg_name]
     except Exception:
         bool_argument = arg_default_value
     return bool_argument
 
 
+def set_file_argument(arg_name, arg_default_value, **kwargs):
+    try:
+        if kwargs[arg_name]:
+            kwargs[arg_name] = [kwargs[arg_name]]
+            for fl in kwargs[arg_name]:
+                filename = fl.filename
+            print_log(f"{currentFuncName()}: filesize {os.path.getsize(filename)}")
+            if os.path.getsize(filename) <= 2:
+                filename = arg_default_value
+                print_log(f"{currentFuncName()}: Info: Set default value for {arg_name}: {arg_default_value}, due to loaded file has zero size")
+        else:
+            print_log(f"{currentFuncName()}: Info: Set default value for {arg_name}: {arg_default_value}")
+            filename = arg_default_value
+    except Exception:
+        filename = arg_default_value
+    print_log(f"{currentFuncName()}: filename == {filename}")
+    return filename
+
+
 def set_kwargs(argument, arg2=None, **kwargs):
-    if argument == "model_path":
-        return set_string_argument("model_path", cfg.MODEL_FILE_PATH(arg2), **kwargs)
-    elif argument == "rcloneNextcloud":
-        set_bool_argument("rclone_nextcloud", False, **kwargs)
-    elif argument == "data_input_source":
-        return set_string_argument("data_input_source", cfg.SERVER_DATA_DIR, **kwargs)
-    elif argument == "type_data_process":
-        return set_string_argument("type_data_process", "train", **kwargs)
-    elif argument == "config_yaml_path":
-        return set_string_argument("config_yaml_path", cfg.CONFIG_YAML_PATH, **kwargs)
-    elif argument == "config_model_yaml_path":
-        return set_string_argument("config_model_yaml_path", cfg.CONFIG_MODEL_YAML_PATH(arg2), **kwargs)
-        
+    if argument == "conf_nn":
+        return set_file_argument("conf_nn", cfg.CONFIG_YAML_NN_PATH, **kwargs)
+    elif argument == "conf_data":
+        return set_file_argument("conf_data", cfg.CONFIG_YAML_DATA_PATH(arg2), **kwargs)
+    elif argument == "model_hdf5":
+        return set_file_argument("model_hdf5", cfg.MODEL_FILE_PATH, **kwargs)
+    elif argument == "data_pred":
+        return set_file_argument("data_pred", cfg.DEFAULT_DATA_TARGZ, **kwargs)
+    elif argument == "data_train":
+        return set_file_argument("data_train", cfg.DEFAULT_DATA_TARGZ, **kwargs)
+    elif argument == "output_name":
+        return set_string_argument("output_name", cfg.OUTPUT_NAME(arg2), **kwargs)
+    elif argument == "urls_inp":
+        return set_string_argument("urls_inp", "", **kwargs)
+    elif argument == "urls_out":
+        return set_string_argument("urls_out", "", **kwargs)
+    elif argument == "get_default_configs":
+        return set_bool_argument("get_default_configs", False, **kwargs)
+    elif argument == "use_last_data":
+        return set_bool_argument("use_last_data", False, **kwargs)
     else:
         return f"{currentFuncName()}: Bad 'variable' argument: {argument}"
 
@@ -238,23 +270,66 @@ def prepare_datasets(**kwargs):
         dest_path_train_file = cfg.TRAIN_FILE
         dest_path_test_file = cfg.TEST_FILE
         dest_path_validate_file = cfg.VALIDATION_FILE
-        config_yaml = bf.load_config_yaml(cfg.CONFIG_MODEL_YAML_PATH("train"))
+        config_yaml = bf.load_config_yaml(cfg.CONFIG_YAML_DATA_PATH("train"))
         print(f"prepare_data_train({source_path}, {dest_path}, {dest_path_train_file}, {dest_path_test_file}, {dest_path_validate_file}, {config_yaml})")
         bf.prepare_data_train(source_path, dest_path, dest_path_train_file, dest_path_test_file, dest_path_validate_file, config_yaml)
     elif type_data_process == "test":
         dest_path_test_file = cfg.TEST_FILE
-        config_yaml = bf.load_config_yaml(cfg.CONFIG_MODEL_YAML_PATH("test"))
+        config_yaml = bf.load_config_yaml(cfg.CONFIG_YAML_DATA_PATH("test"))
         print(f"prepare_data_test({source_path}, {dest_path}, {dest_path_test_file}, {config_yaml})")
         bf.prepare_data_test(source_path, dest_path, dest_path_test_file, config_yaml)
     elif type_data_process == "predict":
         dest_path_predict_file = cfg.PREDICT_FILE
-        config_yaml = bf.load_config_yaml(cfg.CONFIG_MODEL_YAML_PATH("predict"))
+        config_yaml = bf.load_config_yaml(cfg.CONFIG_YAML_DATA_PATH("predict"))
         print(f"prepare_data_predict({source_path}, {dest_path}, {dest_path_predict_file}, {config_yaml})")
         bf.prepare_data_predict(source_path, dest_path, dest_path_test_file, config_yaml)
     else:
-        message = f"{currentFuncName}: Bad value for type_data_process == {type_data_process}. Use one of 'train', 'test', 'predict'"
+        message = f"{currentFuncName()}: Bad value for type_data_process == {type_data_process}. Use one of 'train', 'test', 'predict'"
 
     return message
+
+
+def try_copy(src, dest):
+    try:
+        print_log(f"{currentFuncName()}: shutil.copy({src}, {dest})")
+        shutil.copy(src, dest)
+    except Exception as e:
+        print_log(f"{currentFuncName()}: Error in copy file from {src} to {dest}. Exception: {e}")
+        return e
+
+
+def copy_directories(src, dest):
+    if not os.path.isdir(src):
+        print_log(f"{currentFuncName()}: Source {src} is not a directory")
+        return 0
+    if not os.path.isdir(dest):
+        print_log(f"{currentFuncName()}: Dest ${dest} is not a directory")
+        return 0
+    for f in os.listdir(src):
+        if os.path.isdir(os.path.join(src, f)):
+            print_log(f"{currentFuncName()}: shutil.copytree(os.path.join({src}, {f}), os.path.join({dest}, {f}), dirs_exist_ok=True)")
+            shutil.copytree(os.path.join(src, f), os.path.join(dest, f), dirs_exist_ok=True)
+        else:
+            print_log(f"{currentFuncName()}: Item {f} is not a directory")
+
+
+def copy_recursively(src, dest):
+    if not os.path.isdir(src):
+        return 0
+    else:
+        if not os.path.exists(dest) or not os.path.isdir(dest):
+            print_log(f"{currentFuncName()}: os.mkdir({dest})")
+            os.mkdir(dest)
+    
+    for f in os.listdir(src):
+        if os.path.isfile(os.path.join(src, f)):
+            print_log(f"{currentFuncName()}: shutil.copy(os.path.join({src}, {f}), os.path.join({dest}, {f}))")
+            shutil.copy(os.path.join(src, f), os.path.join(dest, f))
+        elif os.path.isdir(os.path.join(src, f)):
+            print_log(f"{currentFuncName()}: copy_recursively(os.path.join({src}, {f}), os.path.join({dest}, {f}))")
+            copy_recursively(os.path.join(src, f), os.path.join(dest, f))
+        else:
+            print_log(f"{currentFuncName()}: src == {src}, dest == {dest}, f == {f}")
 
 
 def get_predict_args():
@@ -267,7 +342,6 @@ def get_predict_args():
 
 @_catch_error
 def predict(**kwargs):
-#def train(**kwargs):
     """
     Function to execute prediction
     https://docs.deep-hybrid-datacloud.eu/projects/deepaas/en/latest/user/v2-api.html#deepaas.model.v2.base.BaseModel.predict
@@ -275,87 +349,194 @@ def predict(**kwargs):
     :return:
     """
 
+    def _before_return():
+        # delete temp file
+        if conf_nn_path != cfg.CONFIG_YAML_NN_PATH and os.path.isfile(conf_nn_path):
+            print_log(f"os.remove({conf_nn_path})")
+            os.remove(conf_nn_path)
+        if conf_data_path != cfg.CONFIG_YAML_DATA_PATH("predict") and os.path.isfile(conf_data_path):
+            print_log(f"os.remove({conf_data_path})")
+            os.remove(conf_data_path)
+        if model_hdf5_path != cfg.MODEL_FILE_PATH and os.path.isfile(model_hdf5_path):
+            print_log(f"os.remove({model_hdf5_path})")
+            os.remove(model_hdf5_path)
+        if data_input_targz != cfg.DEFAULT_DATA_TARGZ and os.path.isfile(data_input_targz):
+            print_log(f"os.remove({data_input_targz})")
+            os.remove(data_input_targz)
+
+    def _make_zipfile(source_dir, output_filename):
+        shutil.make_archive(output_filename, 'zip', source_dir)
+
+    def _on_return(**kwargs):
+        # make tar.gz file
+        print_log(f"_make_tarfile({output_dir_name}, {output_dir_name}.zip)")
+        _make_zipfile(output_dir_name, output_dir_name)
+        print_log("OK")
+        # send to nextcloud or on gui
+        if urls_out != "":
+            if kwargs["accept"] == "application/json":
+                return open(output_dir_name + ".zip", 'rb', buffering=0)
+            elif kwargs["accept"] == "application/zip":
+                return open(output_dir_name + ".zip", 'rb', buffering=0)
+        else:
+            if kwargs["accept"] == "application/json":
+                return open(output_dir_name + ".zip", 'rb', buffering=0)
+            elif kwargs["accept"] == "application/zip":
+                return open(output_dir_name + ".zip", 'rb')
+
     #if (not any([kwargs['urls'], kwargs['files']]) or
     #        all([kwargs['urls'], kwargs['files']])):
     #    raise Exception("You must provide either 'url' or 'data' in the payload")
 
-    # output dir
-    os.mkdir(cfg.WORK_SAVE_DIR("predict"))
+    # get input values - default values should be preset
+    conf_nn_path = set_kwargs("conf_nn", **kwargs)
+    conf_data_path = set_kwargs("conf_data", "predict", **kwargs) #cfg.CONFIG_YAML_DATA_PATH("predict")
+    model_hdf5_path = set_kwargs("model_hdf5", "predict", **kwargs) #cfg.MODEL_FILE_PATH
+    data_input_targz = set_kwargs("data_pred", **kwargs) #cfg.DEFAULT_DATA_TARGZ
+    output_name = set_kwargs("output_name", "predict", **kwargs) #cfg.OUTPUT_NAME("predict")
+    urls_inp = set_kwargs("urls_inp", **kwargs) # ""
+    urls_out = set_kwargs("urls_out", **kwargs) # ""
+    get_default_configs = set_kwargs("get_default_configs", **kwargs)
+    use_last_data = set_kwargs("use_last_data", **kwargs)
 
-    data_input_targz = os.path.join(cfg.SERVER_DATA_DIR, "input_data.tar.gz")
-    config_yaml_path = cfg.CONFIG_YAML_PATH
-    config_model_yaml_path = cfg.CONFIG_MODEL_YAML_PATH("predict")
-    model_path = os.path.join(cfg.SERVER_DATA_DIR, "model.h5")
+    # print input
+    print_log(f"conf_nn_path == {conf_nn_path}")
+    print_log(f"conf_data_path == {conf_data_path}")
+    print_log(f"model_hdf5_path == {model_hdf5_path}")
+    print_log(f"data_input_targz == {data_input_targz}")
+    print_log(f"output_name == {output_name}")
+    print_log(f"urls_inp == {urls_inp}")
+    print_log(f"urls_out == {urls_out}")
+    print_log(f"get_default_configs == {get_default_configs}")
+    print_log(f"use_last_data == {use_last_data}")
 
-    if kwargs['data_tar']:
-        kwargs['data_tar'] = [kwargs['data_tar']]
-        for a in kwargs['data_tar']:
-            data_input_targz = a.filename
+    # clean directories
+    if os.path.isdir(cfg.NEXTCLOUD_INPUTS):
+        print_log(f"shutil.rmtree({cfg.NEXTCLOUD_INPUTS})")
+        shutil.rmtree(cfg.NEXTCLOUD_INPUTS)
+    else:
+        print_log(f"{cfg.NEXTCLOUD_INPUTS} doesn't exist or it isn't a directory")
     
-    if kwargs['config_yaml']:
-        kwargs['config_yaml'] = [kwargs['config_yaml']]
-        for a in kwargs['config_yaml']:
-            config_yaml_path = a.filename
+    if os.path.isdir(cfg.GUI_INPUTS):
+        print_log(f"shutil.rmtree({cfg.GUI_INPUTS})")
+        shutil.rmtree(cfg.GUI_INPUTS)
+    else:
+        print_log(f"{cfg.GUI_INPUTS} doesn't exist or it isn't a directory")
 
-    if kwargs['config_yaml_model']:
-        kwargs['config_yaml_model'] = [kwargs['config_yaml_model']]
-        for a in kwargs['config_yaml_model']:
-            config_model_yaml_path = a.filename
+    if use_last_data == False:
+        print_log(f"mutils.delete_old_files({cfg.WORKING_DATA_DIR}, .csv)")
+        mutils.delete_old_files(cfg.WORKING_DATA_DIR, ".csv")
+        print_log(f"mutils.delete_old_files({cfg.RAW_DATA_DIR}, .csv)")
+        mutils.delete_old_files(cfg.RAW_DATA_DIR, ".csv")
+        print_log(f"mutils.delete_old_files({cfg.TRAIN_DIR}, .csv)")
+        mutils.delete_old_files(cfg.TRAIN_DIR, ".csv")
+        print_log(f"mutils.delete_old_files({cfg.TEST_DIR}, .csv)")
+        mutils.delete_old_files(cfg.TEST_DIR, ".csv")
+        print_log(f"mutils.delete_old_files({cfg.VALIDATION_DIR}, .csv)")
+        mutils.delete_old_files(cfg.VALIDATION_DIR, ".csv")
 
-    if kwargs['model_h5_file']:
-        kwargs['model_h5_file'] = [kwargs['model_h5_file']]
-        for a in kwargs['model_h5_file']:
-            model_path = a.filename
-    try:
-        shutil.rmtree(cfg.DOWNLOADS_TMP)
-    except:
-    os.mkdir(cfg.DOWNLOADS_TMP)
-    shutil.copy(data_input_targz, cfg.DOWNLOADS_TMP + "/input.tar.gz")
-    subprocess.run("tar -xzvf " + cfg.DOWNLOADS_TMP + "/input.tar.gz --directory " + cfg.DOWNLOADS_TMP,
-                   shell=True, check=True, executable='/bin/bash')
-    data_input_source = cfg.DOWNLOADS_TMP + "/input.tar.gz"
-    
-    shutil.copy(config_yaml_path, cfg.WORK_SAVE_DIR("predict") + "/CONFIG_NN.yaml")
-    config_yaml_path = cfg.WORK_SAVE_DIR("predict") + "/CONFIG_NN.yaml"
-    shutil.copy(config_model_yaml_path, cfg.WORK_SAVE_DIR("predict") + "/CONFIG_model.yaml")
-    config_model_yaml_path = cfg.WORK_SAVE_DIR("predict") + "/CONFIG_model.yaml"
-    shutil.copy(model_path, cfg.WORK_SAVE_DIR("predict") + "/model.h5")
-    model_path = cfg.WORK_SAVE_DIR("predict") + "/model.h5"
+    # makedir output_name and deleted directories
+    output_dir_name = os.path.join(cfg.WORK_SAVE_DIR, output_name)
+    print_log(f"os.mkdir({output_dir_name})")
+    os.mkdir(output_dir_name)
+    print_log(f"os.mkdir({cfg.NEXTCLOUD_INPUTS})")
+    os.mkdir(cfg.NEXTCLOUD_INPUTS)
+    print_log(f"os.mkdir({cfg.GUI_INPUTS})")
+    os.mkdir(cfg.GUI_INPUTS)
 
-    # CONFIG.yaml
-    config_yaml = load_config_yaml_file(config_yaml_path)
-    config_model_yaml = load_config_yaml_file(config_model_yaml_path)
+    # return default config files
+    if get_default_configs == True:
+        print_log(f"shutil.copy({cfg.CONFIG_YAML_NN_PATH}, {output_dir_name})")
+        shutil.copy(cfg.CONFIG_YAML_NN_PATH, output_dir_name)
+        print_log(f"shutil.copy({cfg.CONFIG_YAML_DATA_PATH('train')}, {output_dir_name})")
+        shutil.copy(cfg.CONFIG_YAML_DATA_PATH("train"), output_dir_name)
+        print_log(f"shutil.copy({cfg.CONFIG_YAML_DATA_PATH('predict')}, {output_dir_name})")
+        shutil.copy(cfg.CONFIG_YAML_DATA_PATH("predict"), output_dir_name)
+        print_log(f"shutil.copy({cfg.MODEL_FILE_PATH}, {output_dir_name})")
+        shutil.copy(cfg.MODEL_FILE_PATH, output_dir_name)
+        _before_return()
+        return _on_return(**kwargs)
 
-    # delete old files in working_dir (only with .csv extension)
-    mutils.delete_old_files(cfg.RAW_DATA_DIR, ".csv")
-    mutils.delete_old_files(cfg.TRAIN_DIR, ".csv")
-    mutils.delete_old_files(cfg.TEST_DIR, ".csv")
-    mutils.delete_old_files(cfg.VALIDATION_DIR, ".csv")
+    # copy input from GUI
+    print_log(f"shutil.copy({conf_nn_path}, os.path.join({cfg.GUI_INPUTS}, {cfg.CONFIG_YAML_NN_FILE_NAME}))")
+    shutil.copy(conf_nn_path, os.path.join(cfg.GUI_INPUTS, cfg.CONFIG_YAML_NN_FILE_NAME))
+    print_log(f"shutil.copy({conf_data_path}, os.path.join({cfg.GUI_INPUTS}, {cfg.CONFIG_YAML_DATA_FILE_NAME('predict')}))")
+    shutil.copy(conf_data_path, os.path.join(cfg.GUI_INPUTS, cfg.CONFIG_YAML_DATA_FILE_NAME("predict")))
+    print_log(f"shutil.copy({model_hdf5_path}, os.path.join({cfg.GUI_INPUTS}, {cfg.MODEL_FILE_NAME}))")
+    shutil.copy(model_hdf5_path, os.path.join(cfg.GUI_INPUTS, cfg.MODEL_FILE_NAME))
+    print_log(f"shutil.copy({data_input_targz}, os.path.join({cfg.GUI_INPUTS}, {cfg.DEFAULT_DATA_TARGZ_FILENAME}))")
+    shutil.copy(data_input_targz, os.path.join(cfg.GUI_INPUTS, cfg.DEFAULT_DATA_TARGZ_FILENAME))
+    filename = os.path.basename(data_input_targz)
+    tar = tarfile.open(os.path.join(cfg.GUI_INPUTS, filename))
+    tar.extractall(cfg.GUI_INPUTS)
+    tar.close()
+    print_log(f"os.path.join({cfg.GUI_INPUTS}, {filename})")
+    os.remove(os.path.join(cfg.GUI_INPUTS, filename))
 
-    # prepare data
-    print(f"prepare_data_predict({cfg.DOWNLOADS_TMP}, {cfg.RAW_DATA_DIR}, {cfg.PREDICT_FILE}, {config_model_yaml})")
-    bf.prepare_data_predict(cfg.DOWNLOADS_TMP, cfg.RAW_DATA_DIR, cfg.PREDICT_FILE, config_model_yaml)
-    dataPredictX, dataPredictY = mutils.make_dataset(cfg.PREDICT_FILE, config_model_yaml)
-    # copy data to output
-    shutil.copy(cfg.PREDICT_FILE, cfg.WORK_SAVE_DIR("predict"))
+    # copy file from urls_inp to cfg.NEXTCLOUD_INPUTS, untar/unzip
+    if urls_inp != "":
+        filename = os.path.basename(urls_inp)
+        mutils.rclone_directory(urls_inp, cfg.NEXTCLOUD_INPUTS)
+        tar = tarfile.open(os.path.join(cfg.NEXTCLOUD_INPUTS, filename))
+        tar.extractall(cfg.NEXTCLOUD_INPUTS)
+        tar.close()
+        print_log(f"os.remove(os.path.join({cfg.NEXTCLOUD_INPUTS}, {filename}))")
+        os.remove(os.path.join(cfg.NEXTCLOUD_INPUTS, filename))
+
+    # copy data to output directory, default -> gui -> nextcloud
+    # filename must have same name as default!!!
+    # default
+    print_log(f"Copy default configs to output directory")
+    try_copy(cfg.CONFIG_YAML_NN_PATH, output_dir_name)
+    try_copy(cfg.CONFIG_YAML_DATA_PATH("predict"), output_dir_name)
+    try_copy(cfg.MODEL_FILE_PATH, output_dir_name)
+    print_log(f"copy_recursively(cfg.SERVER_DATA_DIR, cfg.RAW_DATA_DIR)") #, dirs_exist_ok=True")
+    copy_recursively(cfg.SERVER_DATA_DIR, cfg.RAW_DATA_DIR) #, dirs_exist_ok=True)
+    # gui
+    print_log(f"Copy GUI configs to output directory")
+    try_copy(conf_nn_path, output_dir_name)
+    try_copy(conf_data_path, output_dir_name)
+    try_copy(model_hdf5_path, output_dir_name)
+    print_log(f"copy_recursively({cfg.GUI_INPUTS}, {cfg.RAW_DATA_DIR})") #, dirs_exist_ok=True)")
+    copy_recursively(cfg.GUI_INPUTS, cfg.RAW_DATA_DIR) #, dirs_exist_ok=True)
+    # nextcloud
+    print_log(f"Copy nextcloud configs to output directory")
+    try_copy(os.path.join(cfg.NEXTCLOUD_INPUTS, cfg.CONFIG_YAML_NN_FILE_NAME), output_dir_name)
+    try_copy(os.path.join(cfg.NEXTCLOUD_INPUTS, cfg.CONFIG_YAML_DATA_FILE_NAME("predict")), output_dir_name)
+    try_copy(os.path.join(cfg.NEXTCLOUD_INPUTS, cfg.MODEL_FILE_NAME), output_dir_name)
+    print_log(f"copy_recursively({cfg.NEXTCLOUD_INPUTS}, {cfg.RAW_DATA_DIR})") #, dirs_exist_ok=True)")
+    copy_recursively(cfg.NEXTCLOUD_INPUTS, cfg.RAW_DATA_DIR) #, dirs_exist_ok=True)
+
+    # load yaml
+    print_log(f"config_yaml = bf.load_config_yaml(os.path.join({output_dir_name}, {cfg.CONFIG_YAML_DATA_FILE_NAME('predict')}))")
+    config_yaml = bf.load_config_yaml(os.path.join(output_dir_name, cfg.CONFIG_YAML_DATA_FILE_NAME("predict")))
+    print_log(f"config_yaml = bf.load_config_yaml(os.path.join({output_dir_name}, {cfg.CONFIG_YAML_NN_FILE_NAME('predict')}))")
+    config_nn_yaml = bf.load_config_yaml(os.path.join(output_dir_name, cfg.CONFIG_YAML_NN_FILE_NAME("predict")))
+
+    # make dataset
+    if use_last_data == False:
+        print_log(f"prepare_data_predict({cfg.RAW_DATA_DIR}, {cfg.WORKING_DATA_DIR}, {cfg.PREDICT_FILE}, {config_yaml})")
+        bf.prepare_data_predict(cfg.RAW_DATA_DIR, cfg.WORKING_DATA_DIR, cfg.PREDICT_FILE, config_yaml)
+
     # load model
-    modelLoad = mutils.load_model(model_path, config_yaml)
-    # predictions model
+    print_log(f"Load model")
+    modelLoad = mutils.load_model(os.path.join(output_dir_name, cfg.MODEL_FILE_NAME), config_nn_yaml)
+
+    # make prediction
+    print_log(f"Make prediction")
     prediction = mutils.test_model(modelLoad, dataPredictX)
     print(prediction)
    
     message = { "status": "ok",
                 "training": []}
+
+    # save prediction to output text file
+
+    # return output
+    _before_return()
+    _on_return(kwargs)
     return message
 
-
-def load_files(s, *arg):
-    files = []
-    for arg in args:
-        file_objs = arg['files']
-        for f in file_objs:
-            files.append(f.filename)
-    return files
 
 def _predict_data(*args):
     """
@@ -364,7 +545,7 @@ def _predict_data(*args):
     #message = 'Not implemented (predict_data())'
     #message = {"Error": message}
     files = []
-    file_inputs = ['data_tar', 'config_yaml', 'config_yaml_model', 'model_h5_file']
+    file_inputs = ['conf_nn', 'conf_data', 'model_hdf5', 'data_pred' ] # 'data_tar', 'config_yaml', 'config_yaml_model', 'model_h5_file']
     for arg in args:
         for f_i in file_inputs:
             file_objs = arg[f_i]
@@ -380,66 +561,6 @@ def _predict_url(*args):
     """
     message = 'Not implemented (predict_url())'
     message = {"Error": message}
-    return message
-
-
-def get_test_args():
-    """
-    https://docs.deep-hybrid-datacloud.eu/projects/deepaas/en/latest/user/v2-api.html#deepaas.model.v2.base.BaseModel.get_predict_args
-    :return:
-    """
-    return cfg.TestArgsSchema().fields
-
-
-@_catch_error
-def test(**kwargs):
-    message = { "status": "ok",
-                "training": [],
-              }
-
-    # use the schema
-    schema = cfg.TestArgsSchema()
-    # deserialize key-word arguments
-    test_args = schema.load(kwargs)
-    
-    test_results = { "Error": "No model implemented for test (test())" }
-    message["test"].append(test_results)
-
-    # model_path
-    model_path = set_kwargs("model_path", arg2="test", **kwargs)
-
-    # rclone_nextcloud
-    rclone_nextcloud = set_kwargs("rclone_nextcloud", **kwargs)
-
-    # config_yaml_path
-    config_yaml_path = set_kwargs("config_yaml_path", **kwargs)
-
-    # config_model_yaml_path
-    config_model_yaml_path = set_kwargs("config_model_yaml_path", arg2="test", **kwargs)
-
-    # CONFIG.yaml
-    config_yaml = load_config_yaml_file(config_yaml_path)
-    config_model_yaml = load_config_yaml_file(config_model_yaml_path)
-
-    # prepare data
-    dataTestX, dataTestY = mutils.make_dataset(cfg.TEST_FILE, config_model_yaml)
-
-    # output dir
-    os.mkdir(cfg.WORK_SAVE_DIR("test"))
-
-    # copy data to output
-    shutil.copy(cfg.TEST_FILE, cfg.WORK_SAVE_DIR("test"))
-    shutil.copy(config_yaml_path, cfg.WORK_SAVE_DIR("test"))
-    shutil.copy(config_model_yaml_path, cfg.WORK_SAVE_DIR("test"))
-    shutil.copy(model_path, cfg.WORK_SAVE_DIR("test"))
-
-    # load model
-    modelLoad = mutils.load_model(model_path, config_yaml)
-    # predictions model
-    prediction = mutils.test_model(modelLoad, dataTestX)
-    print(prediction)
-    # compare prediction and dataTestY
-
     return message
 
 
@@ -459,7 +580,6 @@ def get_train_args():
 ###
 #@flaat.login_required() # Allows only authorized people to train
 def train(**kwargs):
-#def predict(**kwargs):
     """
     Train network
     https://docs.deep-hybrid-datacloud.eu/projects/deepaas/en/latest/user/v2-api.html#deepaas.model.v2.base.BaseModel.train
@@ -467,110 +587,180 @@ def train(**kwargs):
     :return:
     """
 
-    message = { "status": "ok",
-                "training": [],
-              }
+    def _before_return():
+        # delete temp file
+        if conf_nn_path != cfg.CONFIG_YAML_NN_PATH and os.path.isfile(conf_nn_path):
+            print_log(f"os.remove({conf_nn_path})")
+            os.remove(conf_nn_path)
+        if conf_data_path != cfg.CONFIG_YAML_DATA_PATH("train") and os.path.isfile(conf_data_path):
+            print_log(f"os.remove({conf_data_path})")
+            os.remove(conf_data_path)
+        if data_input_targz != cfg.DEFAULT_DATA_TARGZ and os.path.isfile(data_input_targz):
+            print_log(f"os.remove({data_input_targz})")
+            os.remove(data_input_targz)
 
-    # use the schema
-    #schema = cfg.TrainArgsSchema()
-    # deserialize key-word arguments
-    #train_args = schema.load(kwargs)
+    def _make_zipfile(source_dir, output_filename):
+        shutil.make_archive(output_filename, 'zip', source_dir)
+
+    def _on_return(**kwargs):
+        # make tar.gz file
+        print_log(f"_make_tarfile({output_dir_name}, {output_dir_name}.zip)")
+        _make_zipfile(output_dir_name, output_dir_name)
+        print_log("OK")
+        # send to nextcloud or on gui
+        if urls_out != "":
+            if kwargs["accept"] == "application/json":
+                return open(output_dir_name + ".zip", 'rb', buffering=0)
+            elif kwargs["accept"] == "application/zip":
+                return open(output_dir_name + ".zip", 'rb', buffering=0)
+        else:
+            if kwargs["accept"] == "application/json":
+                return open(output_dir_name + ".zip", 'rb', buffering=0)
+            elif kwargs["accept"] == "application/zip":
+                return open(output_dir_name + ".zip", 'rb')
+
+    #if (not any([kwargs['urls'], kwargs['files']]) or
+    #        all([kwargs['urls'], kwargs['files']])):
+    #    raise Exception("You must provide either 'url' or 'data' in the payload")
+
+    # get input values - default values should be preset
+    conf_nn_path = cfg.CONFIG_YAML_NN_PATH #set_kwargs("conf_nn", **kwargs)
+    conf_data_path = cfg.CONFIG_YAML_DATA_PATH("train") #set_kwargs("conf_data", "train", **kwargs)
+    data_input_targz = cfg.DEFAULT_DATA_TARGZ #set_kwargs("data_pred", **kwargs)
+    output_name = set_kwargs("output_name", "train", **kwargs) #cfg.OUTPUT_NAME("train")
+    urls_inp = set_kwargs("urls_inp", **kwargs) # ""
+    urls_out = set_kwargs("urls_out", **kwargs) # ""
+    use_last_data = set_kwargs("use_last_data", **kwargs)
+
+    # print input
+    print_log(f"conf_nn_path == {conf_nn_path}")
+    print_log(f"conf_data_path == {conf_data_path}")
+    print_log(f"data_input_targz == {data_input_targz}")
+    print_log(f"output_name == {output_name}")
+    print_log(f"urls_inp == {urls_inp}")
+    print_log(f"urls_out == {urls_out}")
+    print_log(f"use_last_data == {use_last_data}")
+
+    # clean directories
+    if os.path.isdir(cfg.NEXTCLOUD_INPUTS):
+        print_log(f"shutil.rmtree({cfg.NEXTCLOUD_INPUTS})")
+        shutil.rmtree(cfg.NEXTCLOUD_INPUTS)
+    else:
+        print_log(f"{cfg.NEXTCLOUD_INPUTS} doesn't exist or it isn't a directory")
     
-    os.mkdir(cfg.WORK_SAVE_DIR("train"))
+    if os.path.isdir(cfg.GUI_INPUTS):
+        print_log(f"shutil.rmtree({cfg.GUI_INPUTS})")
+        shutil.rmtree(cfg.GUI_INPUTS)
+    else:
+        print_log(f"{cfg.GUI_INPUTS} doesn't exist or it isn't a directory")
 
-    data_input_targz = os.path.join(cfg.SERVER_DATA_DIR, "input_data.tar.gz")
-    config_yaml_path = cfg.CONFIG_YAML_PATH
-    config_model_yaml_path = cfg.CONFIG_MODEL_YAML_PATH("train_model")
+    if use_last_data == False:
+        print_log(f"mutils.delete_old_files({cfg.WORKING_DATA_DIR}, .csv)")
+        mutils.delete_old_files(cfg.WORKING_DATA_DIR, ".csv")
+        print_log(f"mutils.delete_old_files({cfg.RAW_DATA_DIR}, .csv)")
+        mutils.delete_old_files(cfg.RAW_DATA_DIR, ".csv")
+        print_log(f"mutils.delete_old_files({cfg.TRAIN_DIR}, .csv)")
+        mutils.delete_old_files(cfg.TRAIN_DIR, ".csv")
+        print_log(f"mutils.delete_old_files({cfg.TEST_DIR}, .csv)")
+        mutils.delete_old_files(cfg.TEST_DIR, ".csv")
+        print_log(f"mutils.delete_old_files({cfg.VALIDATION_DIR}, .csv)")
+        mutils.delete_old_files(cfg.VALIDATION_DIR, ".csv")
 
-    try:
-        shutil.rmtree(cfg.DOWNLOADS_TMP)
-    except:
-        print("dbvisu")
-    os.mkdir(cfg.DOWNLOADS_TMP)
-    shutil.copy(data_input_targz, cfg.DOWNLOADS_TMP + "/input.tar.gz")
-    subprocess.run("tar -xzvf " + cfg.DOWNLOADS_TMP + "/input.tar.gz --directory " + cfg.DOWNLOADS_TMP,
-                   shell=True, check=True, executable='/bin/bash')
-    data_input_source = cfg.DOWNLOADS_TMP + "/input.tar.gz"
-    
-    shutil.copy(config_yaml_path, cfg.WORK_SAVE_DIR("train") + "/CONFIG_NN.yaml")
-    config_yaml_path = cfg.WORK_SAVE_DIR("train") + "/CONFIG_NN.yaml"
-    shutil.copy(config_model_yaml_path, cfg.WORK_SAVE_DIR("train") + "/CONFIG_model.yaml")
-    config_model_yaml_path = cfg.WORK_SAVE_DIR("train") + "/CONFIG_model.yaml"
+    # makedir output_name and deleted directories
+    output_dir_name = os.path.join(cfg.WORK_SAVE_DIR, output_name)
+    print_log(f"os.mkdir({output_dir_name})")
+    os.mkdir(output_dir_name)
+    print_log(f"os.mkdir({cfg.NEXTCLOUD_INPUTS})")
+    os.mkdir(cfg.NEXTCLOUD_INPUTS)
+    print_log(f"os.mkdir({cfg.GUI_INPUTS})")
+    os.mkdir(cfg.GUI_INPUTS)
 
-    model_path = cfg.WORK_SAVE_DIR("train") + "/model.h5"
+    # copy input from GUI
+    print_log(f"shutil.copy({conf_nn_path}, os.path.join({cfg.GUI_INPUTS}, {cfg.CONFIG_YAML_NN_FILE_NAME}))")
+    shutil.copy(conf_nn_path, os.path.join(cfg.GUI_INPUTS, cfg.CONFIG_YAML_NN_FILE_NAME))
+    print_log(f"shutil.copy({conf_data_path}, os.path.join({cfg.GUI_INPUTS}, {cfg.CONFIG_YAML_DATA_FILE_NAME('train')}))")
+    shutil.copy(conf_data_path, os.path.join(cfg.GUI_INPUTS, cfg.CONFIG_YAML_DATA_FILE_NAME("train")))
+    print_log(f"shutil.copy({data_input_targz}, os.path.join({cfg.GUI_INPUTS}, {cfg.DEFAULT_DATA_TARGZ_FILENAME}))")
+    shutil.copy(data_input_targz, os.path.join(cfg.GUI_INPUTS, cfg.DEFAULT_DATA_TARGZ_FILENAME))
+    filename = os.path.basename(data_input_targz)
+    tar = tarfile.open(os.path.join(cfg.GUI_INPUTS, filename))
+    tar.extractall(cfg.GUI_INPUTS)
+    tar.close()
+    print_log(f"os.path.join({cfg.GUI_INPUTS}, {filename})")
+    os.remove(os.path.join(cfg.GUI_INPUTS, filename))
 
-    # CONFIG.yaml
-    config_yaml = load_config_yaml_file(config_yaml_path)
-    config_model_yaml = load_config_yaml_file(config_model_yaml_path)
+    # copy file from urls_inp to cfg.NEXTCLOUD_INPUTS, untar/unzip
+    if urls_inp != "":
+        filename = os.path.basename(urls_inp)
+        mutils.rclone_directory(urls_inp, cfg.NEXTCLOUD_INPUTS)
+        tar = tarfile.open(os.path.join(cfg.NEXTCLOUD_INPUTS, filename))
+        tar.extractall(cfg.NEXTCLOUD_INPUTS)
+        tar.close()
+        print_log(f"os.remove(os.path.join({cfg.NEXTCLOUD_INPUTS}, {filename}))")
+        os.remove(os.path.join(cfg.NEXTCLOUD_INPUTS, filename))
 
-    # delete old files in working_dir (only with .csv extension)
-    mutils.delete_old_files(cfg.RAW_DATA_DIR, ".csv")
-    mutils.delete_old_files(cfg.TRAIN_DIR, ".csv")
-    mutils.delete_old_files(cfg.TEST_DIR, ".csv")
-    mutils.delete_old_files(cfg.VALIDATION_DIR, ".csv")
+    # copy data to output directory, default -> gui -> nextcloud
+    # filename must have same name as default!!!
+    # default
+    print_log(f"Copy default configs to output directory")
+    try_copy(cfg.CONFIG_YAML_NN_PATH, output_dir_name)
+    try_copy(cfg.CONFIG_YAML_DATA_PATH("train"), output_dir_name)
+    print_log(f"copy_recursively({cfg.SERVER_DATA_DIR}, {cfg.RAW_DATA_DIR})") #, dirs_exist_ok=True)")
+    copy_recursively(cfg.SERVER_DATA_DIR, cfg.RAW_DATA_DIR) #, dirs_exist_ok=True)
+    # gui
+    print_log(f"Copy GUI configs to output directory")
+    try_copy(conf_nn_path, output_dir_name)
+    try_copy(conf_data_path, output_dir_name)
+    print_log(f"copy_recursively({cfg.GUI_INPUTS}, {cfg.RAW_DATA_DIR})") #, dirs_exist_ok=True)")
+    copy_recursively(cfg.GUI_INPUTS, cfg.RAW_DATA_DIR) #, dirs_exist_ok=True)
+    # nextcloud
+    print_log(f"Copy nextcloud configs to output directory")
+    try_copy(os.path.join(cfg.NEXTCLOUD_INPUTS, cfg.CONFIG_YAML_NN_FILE_NAME), output_dir_name)
+    try_copy(os.path.join(cfg.NEXTCLOUD_INPUTS, cfg.CONFIG_YAML_DATA_FILE_NAME("train")), output_dir_name)
+    print_log(f"copy_recursively({cfg.NEXTCLOUD_INPUTS}, {cfg.RAW_DATA_DIR})") #, dirs_exist_ok=True)")
+    copy_recursively(cfg.NEXTCLOUD_INPUTS, cfg.RAW_DATA_DIR) #, dirs_exist_ok=True)
 
-    # prepare data
-    print(f"prepare_data_train({cfg.DOWNLOADS_TMP}, {cfg.RAW_DATA_DIR}, {cfg.TRAIN_FILE}, {cfg.TEST_FILE}, {cfg.VALIDATION_FILE}, {config_model_yaml})")
-    bf.prepare_data_train(cfg.DOWNLOADS_TMP, cfg.RAW_DATA_DIR, cfg.TRAIN_FILE, cfg.TEST_FILE, cfg.VALIDATION_FILE, config_model_yaml)
+    print_log(f"config_yaml = bf.load_config_yaml(os.path.join({output_dir_name}, {cfg.CONFIG_YAML_DATA_FILE_NAME('train')}))")
+    config_yaml = bf.load_config_yaml(os.path.join(output_dir_name, cfg.CONFIG_YAML_DATA_FILE_NAME("train")))
 
-    # prepare data
-    dataTrainX, dataTrainY = mutils.make_dataset(cfg.TRAIN_FILE, config_model_yaml)
+    # make dataset
+    if use_last_data == False:
+        print_log(f"prepare_data_train({cfg.RAW_DATA_DIR}, {cfg.WORKING_DATA_DIR}, {cfg.TRAIN_FILE}, {cfg.TEST_FILE}, {cfg.VALIDATION_FILE}, {config_yaml})")
+        bf.prepare_data_train(cfg.RAW_DATA_DIR, cfg.WORKING_DATA_DIR, cfg.TRAIN_FILE, cfg.TEST_FILE, cfg.VALIDATION_FILE, config_yaml)
+
+    print_log(f"dataTrainX, dataTrainY = mutils.make_dataset({cfg.TRAIN_FILE}, config_yaml)")
+    dataTrainX, dataTrainY = mutils.make_dataset(cfg.TRAIN_FILE, config_yaml)
 
     # copy data to output
-    shutil.copy(cfg.TRAIN_FILE, cfg.WORK_SAVE_DIR("train"))
-    shutil.copy(cfg.TEST_FILE, cfg.WORK_SAVE_DIR("train"))
-    shutil.copy(cfg.VALIDATION_FILE, cfg.WORK_SAVE_DIR("train"))
-    # model training
+    print_log(f"Copy data to output")
+    if os.path.exists(cfg.TRAIN_FILE):
+        print_log(f"shutil.copy({cfg.TRAIN_FILE}, {output_dir_name})")
+        shutil.copy(cfg.TRAIN_FILE, output_dir_name)
+    if os.path.exists(cfg.TEST_FILE):
+        print_log(f"shutil.copy({cfg.TEST_FILE}, {output_dir_name})")
+        shutil.copy(cfg.TEST_FILE, output_dir_name)
+    if os.path.exists(cfg.VALIDATION_FILE):
+        print_log(f"shutil.copy({cfg.VALIDATION_FILE}, {output_dir_name})")
+        shutil.copy(cfg.VALIDATION_FILE, output_dir_name)
+
+    ### model training
+    print_log(f"config_nn_yaml = bf.load_config_yaml(os.path.join({output_dir_name}, {cfg.CONFIG_YAML_NN_FILE_NAME}))")
+    config_nn_yaml = bf.load_config_yaml(os.path.join(output_dir_name, cfg.CONFIG_YAML_NN_FILE_NAME))
+    print_log(f"trainScores, trainHistories, trainModels = mutils.train_model(dataTrainX, dataTrainY, config_nn_yaml)")
     trainScores, trainHistories, trainModels = mutils.train_model(
-        dataTrainX, dataTrainY, config_yaml
+        dataTrainX, dataTrainY, config_nn_yaml
     )
-    # model saving
-    mutils.save_model(trainModels[1], model_path)
-    train_results = { "Error": "No model implemented for training (train())" }
-    message["training"].append(train_results)
-    return(message)
-
-    # model_path
-    model_path = set_kwargs("model_path", arg2="train", **kwargs)
-
-    # rclone_nextcloud
-    rclone_nextcloud = set_kwargs("rclone_nextcloud", **kwargs)
-    # config_yaml_path
-    #config_yaml_path = set_kwargs("config_yaml_path", **kwargs)
-
-    kwargs['files'] = [kwargs['files']]
-    #kwargs['config_model_yaml'] = [kwargs['config_model_yaml']]
-    config_yaml = load_files(kwargs)
-    #config_model_yaml = load_files('config_model_yaml', kwargs)
-
-    # config_model_yaml_path
-    #config_model_yaml_path = set_kwargs("config_model_yaml_path", arg2="train", **kwargs)
-
-    # CONFIG.yaml
-    #config_yaml = load_config_yaml_file(config_yaml_path)
-    #config_model_yaml = load_config_yaml_file(config_model_yaml_path)
-
-    # prepare data
-    #dataTrainX, dataTrainY = mutils.make_dataset(cfg.TRAIN_FILE, config_model_yaml)
-
-    # output dir
-    #os.mkdir(cfg.WORK_SAVE_DIR("train"))
-
-    # copy data to output
-    #shutil.copy(cfg.TRAIN_FILE, cfg.WORK_SAVE_DIR("train"))
-    #shutil.copy(cfg.TEST_FILE, cfg.WORK_SAVE_DIR("train"))
-    #shutil.copy(cfg.VALIDATION_FILE, cfg.WORK_SAVE_DIR("train"))
-    #shutil.copy(config_yaml_path, cfg.WORK_SAVE_DIR("train"))
-    #shutil.copy(config_model_yaml_path, cfg.WORK_SAVE_DIR("train"))
-
-    # model training
-    #trainScores, trainHistories, trainModels = mutils.train_model(
-    #    dataTrainX, dataTrainY, config_yaml
-    #)
 
     # model saving
-    #mutils.save_model(trainModels[1], model_path)
+    print_log(f"mutils.save_model(trainModels[1], os.path.join({output_dir_name}, {cfg.MODEL_FILE_NAME}))")
+    mutils.save_model(trainModels[1], os.path.join(output_dir_name, cfg.MODEL_FILE_NAME))
+   
+    message = { "status": "ok",
+                "training": []}
 
+    # return output
+    _before_return()
+    _on_return()
     return message
 
 
@@ -594,28 +784,7 @@ def main():
         results = predict(**vars(args))
         print(json.dumps(results))
         return results
-    elif args.method == 'predict':
-        #if args.files:
-            # create tmp file as later it will be deleted
-            #print('abc')
-            #temp = tempfile.NamedTemporaryFile()
-            #temp.close()
-            # copy original file into tmp file
-            #print(args.files)
-            #with open(args.files, "rb") as f:
-            #    print(f)
-            #    with open(temp.name, "wb") as f_tmp:
-            #        print(temp.name)
-            #        for line in f:
-            #            f_tmp.write(line)
-        
-            # create file object to mimic aiohttp workflow
-            #file_obj = wrapper.UploadedFile(name="data1", 
-            #                                filename = temp.name,
-            #                                content_type=mimetypes.MimeTypes().guess_type(args.files)[0],
-            #                                original_filename=args.files)
-            #args.files = file_obj
-        
+    elif args.method == 'predict':        
         # [!] you may need to take special care in the case of args.files [!]
         results = predict(**vars(args))
         print(json.dumps(results))

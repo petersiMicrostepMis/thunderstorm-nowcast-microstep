@@ -4,7 +4,7 @@
 """
 
 import os
-from webargs import fields
+from webargs import fields, validate
 from marshmallow import Schema, INCLUDE
 from datetime import datetime
 import subprocess
@@ -27,8 +27,12 @@ if 'APP_INPUT_OUTPUT_BASE_DIR' in os.environ:
         print(msg)
 
 SERVER_DATA_DIR = os.path.join(IN_OUT_BASE_DIR, 'data/raw')
+DEFAULT_DATA_TARGZ_FILENAME = "input_data.tar.gz"
+DEFAULT_DATA_TARGZ = os.path.join(SERVER_DATA_DIR, DEFAULT_DATA_TARGZ_FILENAME)
 DOWNLOADS_TMP = os.path.join(IN_OUT_BASE_DIR, 'data/downloads_tmp')
 NEXTCLOUD_DATA_DIR = ""
+NEXTCLOUD_INPUTS = os.path.join(IN_OUT_BASE_DIR, 'data/nextcloud_inputs')
+GUI_INPUTS = os.path.join(IN_OUT_BASE_DIR, 'data/gui_inputs')
 WORKING_DATA_DIR = os.path.join(IN_OUT_BASE_DIR, NAME + '/dataset/data_working_directory')
 RAW_DATA_DIR = os.path.join(WORKING_DATA_DIR, "raw")
 TRAIN_DIR = os.path.join(WORKING_DATA_DIR, "train")
@@ -42,165 +46,168 @@ PREDICT_FILE = os.path.join(VALIDATION_DIR, "predict.csv")
 CONFIG_DATA_DIR = os.path.join(IN_OUT_BASE_DIR, NAME + '/dataset/config')
 
 TIME_DIR_SUFFIX = datetime.now().strftime("%Y%m%d_%H%M%S")
-WORK_SAVE_DIR = lambda x : os.path.join(IN_OUT_BASE_DIR, 'models/' + x + '_model_' + TIME_DIR_SUFFIX)
-MODEL_FILE_PATH = lambda x : os.path.join(WORK_SAVE_DIR(x), 'model.h5')
-CONFIG_YAML_PATH = os.path.join(BASE_DIR, "CONFIG.yaml")
-CONFIG_MODEL_YAML_PATH = lambda x : os.path.join(CONFIG_DATA_DIR, "CONFIG_" + x + ".yaml")
+WORK_SAVE_DIR = os.path.join(IN_OUT_BASE_DIR, 'models')
+OUTPUT_NAME = lambda x : x + '_model_' + TIME_DIR_SUFFIX
+
+MODEL_FILE_NAME = "model.h5"
+CONFIG_YAML_NN_FILE_NAME = "CONFIG.yaml"
+CONFIG_YAML_DATA_FILE_NAME = lambda x : "CONFIG_" + x + ".yaml"
+
+MODEL_FILE_PATH = os.path.join(SERVER_DATA_DIR, MODEL_FILE_NAME)
+CONFIG_YAML_NN_PATH = os.path.join(BASE_DIR, CONFIG_YAML_NN_FILE_NAME)
+CONFIG_YAML_DATA_PATH = lambda x : os.path.join(CONFIG_DATA_DIR, CONFIG_YAML_DATA_FILE_NAME(x))
 
 
 # Input parameters for predict() (deepaas>=1.0.0)
 class PredictArgsSchema(Schema):
-#class TrainArgsSchema(Schema):
     class Meta:
         unknown = INCLUDE  # support 'full_paths' parameter
 
     # full list of fields: https://marshmallow.readthedocs.io/en/stable/api_reference.html
     # to be able to upload a file for prediction
-    data_tar = fields.Field(
-        required=False,
-        missing=None, #os.path.join(SERVER_DATA_DIR, "input_data.tar.gz"), #None,
-        type="file",
-        data_key="data1",
-        location="form",
-        description="Select a file tar.gz file with all input files for the prediction. Otherwise, default will be used."
+    get_default_configs = fields.Bool(
+        required = False,
+        missing = False,
+        description = "If True is selected, prediction returns default files (configuration, data)."
     )
 
-    config_yaml = fields.Field(
-        required=False,
-        missing=None, #CONFIG_YAML_PATH,
-        type="file",
-        data_key="data_yaml",
-        location="form",
-        description="Select a CONFIG yaml file for the prediction. Otherwise, default will be used."
+    use_last_data = fields.Bool(
+        required = False,
+        missing = True,
+        description = "If True is selected, new dataset won't be used."
     )
 
-    config_yaml_model = fields.Field(
+    conf_nn = fields.Field(
         required=False,
-        missing=None, #CONFIG_MODEL_YAML_PATH("predict"),
+        missing=None,
         type="file",
-        data_key="data_yaml_model",
+        data_key="conf_nn_pred",
         location="form",
-        description="Select a CONFIG yaml model file for the prediction. Otherwise, default will be used."
+        description="Select config YAML file for neural network architecture. Empty file -> default will be used."
     )
 
-    model_h5_file = fields.Field(
+    conf_data = fields.Field(
         required=False,
-        missing=None, #os.path.join(SERVER_DATA_DIR, "model.h5")
+        missing=None,
         type="file",
-        data_key="data_model_h5",
+        data_key="conf_data_pred",
         location="form",
-        description="Select a HDF5 model file for the prediction. Otherwise, default will be used."
+        description="Select config YAML file for prediction. Empty file -> default will be used."
     )
 
-    # to be able to provide an URL for prediction
-    #urls = fields.Url(
-    #    required=False,
-    #    missing=None,
-    #    description="Provide an URL of the data for the prediction"
-    #)
+    model_hdf5 = fields.Field(
+        required=False,
+        missing=None,
+        type="file",
+        data_key="model_hdf5",
+        location="form",
+        description="Select HDF5 model file for prediction. Empty file -> default will be used."
+    )
 
-    #model_path = fields.String(
-    #    required=False, missing=None, description="Select model path"
-    #)
+    data_pred = fields.Field(
+        required=False,
+        missing=None,
+        type="file",
+        data_key="data_pred",
+        location="form",
+        description="Select input data tar.gz file for prediction. Empty file -> nextcloud will be used."
+    )
 
-    #rclone_nextcloud = fields.Bool(
-    #    required=False, missing=False, description="Use nextcloud data source?"
-    #)
+    urls_inp = fields.Url(
+        required=False,
+        missing=None,
+        description="Provide an URL of the data for the prediction. If empty file + no url -> default data will be used."
+    )
 
-    #config_yaml_path = fields.String(
-    #    required=False, missing=None, description="Select config yaml path"
-    #)
+    output_name = fields.String(
+        required=False, missing=None, description="Write output file name. Otherwise, some default name will be used."
+    )
 
-    #config_model_yaml_path = fields.String(
-    #    required=False, missing=None, description="Select config yaml model path"
-    #)
-    
-    # an input parameter for prediction
-    #arg1 = fields.Integer(
-    #    required=False,
-    #    missing=1,
-    #    description="Input argument 1 for the prediction"
-    #)
+    urls_out = fields.Url(
+        required=False,
+        missing=None,
+        description="Provide an URL for output the prediction. If no url -> output on screen."
+    )
+
+    accept = fields.Str(
+        load_default="application/json",
+        location="headers",
+        validate=validate.OneOf(
+            ["application/json", "application/zip"]
+        ),
+        metadata={
+            "description": "Returns a zip file with prediction results and used config files."
+        },
+    )
+
 
 # Input parameters for train() (deepaas>=1.0.0)
 class TrainArgsSchema(Schema):
-#class PredictArgsSchema(Schema):
     class Meta:
         unknown = INCLUDE  # support 'full_paths' parameter
 
     # available fields are e.g. fields.Integer(), fields.Str(), fields.Boolean()
     # full list of fields: https://marshmallow.readthedocs.io/en/stable/api_reference.html
+    use_last_data = fields.Bool(
+        required = False,
+        missing = True,
+        description = "If True is selected, new dataset won't be used."
+    )
 
-    #model_path = fields.String(
-    #    required=False, missing=None, description="Select model path"
-    #)
+#    conf_nn = fields.Field(
+#        required=False,
+#        missing=None,
+#        type="file",
+#        data_key="conf_nn_train",
+#        location="form",
+#        description="Select config YAML file for neural network architecture. Empty file -> default will be used."
+#    )
 
-    #rclone_nextcloud = fields.Bool(
-    #    required=False, missing=False, description="Use nextcloud data source?"
-    #)
+#    conf_data = fields.Field(
+#        required=False,
+#        missing=None,
+#        type="file",
+#        data_key="conf_data_train",
+#        location="form",
+#        description="Select config YAML file for training. Empty file -> default will be used."
+#    )
 
-    #data_tar_tr = fields.Field(
-    #    required=False,
-    #    missing=None, #os.path.join(SERVER_DATA_DIR, "input_data.tar.gz"),
-    #    type="file",
-    #    data_key="data1_tr",
-    #    location="form",
-    #    description="Select a file tar.gz file with all input files for the prediction. Otherwise, default will be used."
-    #)
+#    data_train = fields.Field(
+#        required=False,
+#        missing=None,
+#        type="file",
+#        data_key="data_train",
+#        location="form",
+#        description="Select input data tar.gz file for training. Empty file -> nextcloud will be used."
+#    )
 
-    #config_yaml_tr = fields.Field(
-    #    required=False,
-    #    missing=None, #CONFIG_YAML_PATH,
-    #   type="file",
-    #    data_key="data_yaml_tr",
-    #    location="form",
-    #    description="Select a CONFIG yaml file for the prediction. Otherwise, default will be used."
-    #)
-
-    #config_yaml_model_tr = fields.Field(
-    #    required=False,
-    #    missing=None, #CONFIG_MODEL_YAML_PATH("predict"),
-    #    type="file",
-    #    data_key="data_yaml_model_tr",
-    #    location="form",
-    #    description="Select a CONFIG yaml model file for the prediction. Otherwise, default will be used."
-    #)
-
-    arg1 = fields.Integer(
+    urls_inp = fields.Url(
         required=False,
-        missing=1,
-        description="Input argument 1 for training"
+        missing=None,
+        description="Provide an URL of the data for the training. If empty file + no url -> default data will be used."
     )
 
-# Input parameters for test() (deepaas>=1.0.0)
-class TestArgsSchema(Schema):
-    class Meta:
-        unknown = INCLUDE  # support 'full_paths' parameter
-
-    # available fields are e.g. fields.Integer(), fields.Str(), fields.Boolean()
-    # full list of fields: https://marshmallow.readthedocs.io/en/stable/api_reference.html
-
-    model_path = fields.String(
-        required=False, missing=None, description="Select model path"
+    output_name = fields.String(
+        required=False, missing=None, description="Write output file name. Otherwise, some default name will be used."
     )
 
-    rclone_nextcloud = fields.Bool(
-        required=False, missing=False, description="Use nextcloud data source?"
-    )
-
-    config_yaml_path = fields.String(
-        required=False, missing=None, description="Select config yaml path"
-    )
-
-    config_model_yaml_path = fields.String(
-        required=False, missing=None, description="Select config yaml model path"
-    )
-
-    arg1 = fields.Integer(
+    urls_out = fields.Url(
         required=False,
-        missing=1,
-        description="Input argument 1 for testing"
+        missing=None,
+        description="Provide an URL for output the training. If no url -> output on screen."
     )
+
+    accept = fields.Str(
+        load_default="application/json",
+        location="headers",
+        validate=validate.OneOf(
+            ["application/json", "application/zip"]
+        ),
+        metadata={
+            "description": "Returns a zip file with prediction results and used config files."
+        },
+    )
+
 
 # Input parameters for prepare_datasets() (deepaas>=1.0.0)
 class PrepareDatasetsArgsSchema(Schema):

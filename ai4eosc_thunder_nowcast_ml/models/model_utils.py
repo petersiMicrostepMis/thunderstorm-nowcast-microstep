@@ -126,6 +126,7 @@ def define_model(parameters):  # dotiahnut hodnoty z configu
         s = ", ".join(s)
         s = layerName + "(" + s + ")"
         eval("model.add(" + s + ")")
+
     # optimizer settings
     opt = parameters["optimizer"]
     keys = opt.keys()
@@ -142,6 +143,7 @@ def define_model(parameters):  # dotiahnut hodnoty z configu
     s = ", ".join(s)
     s = optName + "(" + s + ")"
     optimizer = s
+
     # model compile
     mcompile = parameters["model_compile"]
     keys = mcompile.keys()
@@ -153,13 +155,13 @@ def define_model(parameters):  # dotiahnut hodnoty z configu
             if mcompile["optimizer"] != "":
                 optimizer = mcompile["optimizer"]
             optimizer = ["optimizer = " + optimizer,]
-            #print(f"optimizer == {optimizer}")
         elif key == "other_settings":
             otherSettings = [mcompile["other_settings"]]
         else:
             s.append(key + "=" + mcompile[key])
     s = otherSettings + optimizer + s
     s = ", ".join(s)
+    print("model.compile(" + s + ")")
     eval("model.compile(" + s + ")")
     return model
 
@@ -175,10 +177,8 @@ def train_model(dataX, dataY, parameters):
         model = define_model(parameters)  # define model
         trainX = [dataX[train_ix[i]] for i in range(len(train_ix))]
         trainY = [dataY[train_ix[i]] for i in range(len(train_ix))]
-        #trainX, trainY = dataX[train_ix], dataY[train_ix]  # select rows for train
         testX = [dataX[test_ix[i]] for i in range(len(test_ix))]
         testY = [dataY[test_ix[i]] for i in range(len(test_ix))]
-        #testX, testY = dataX[test_ix], dataY[test_ix]  # select rows for test
 
         history = model.fit(
             trainX,
@@ -213,6 +213,7 @@ def test_model(model, dataX, dataY=[]):
 
 def load_model(modelPath, parameters):
     model = define_model(parameters)
+    print(modelPath)
     model.load_weights(modelPath, skip_mismatch=False, by_name=False, options=None)
     return model
 

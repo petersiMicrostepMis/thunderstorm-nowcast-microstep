@@ -80,15 +80,15 @@ def load_csv_files(source_path_list, config_yaml, header_list):
     output_df = list()
     output_header = list()
     j = 0
+    print(len(source_path_list))
     for i in range(len(source_path_list)):
+        print(source_path_list[i])
+        print(os.path.isfile(source_path_list[i]))
         if os.path.isfile(source_path_list[i]):
-            #print_log(f"{currentFuncName()}: Reading file: {source_path}/{data_file} ...")
             output_df.append(pd.DataFrame())
             output_df[j] = pd.read_csv(source_path_list[i], na_filter=False)
             output_header.append(header_list[i])
             j = j + 1
-        #else:
-        #    print_log(f"{currentFuncName()}: Warning: Skipping file {source_path}/{data_file}, it does not exist.")
     return output_df, output_header
 
 
@@ -235,7 +235,7 @@ def prepare_data_train(source_path, dest_path, dest_path_train_file, dest_path_t
                       config_yaml['measurements'],
                       eval(config_yaml['all_data_sources']),
                       eval(config_yaml['use_columns']) + eval(config_yaml['ORP_list']))
-    
+
     # load_csv_files
     d_source_path_list = list()
     d_headers = list()
@@ -359,6 +359,7 @@ def prepare_data_predict(source_path, dest_path, dest_path_predict_file, config_
                       eval(config_yaml['all_data_sources']),
                       eval(config_yaml['use_columns']) + eval(config_yaml['ORP_list']),
                       config_yaml['forecast_time'])
+
     # load_csv_files
     d_source_path_list = list()
     d_headers = list()
@@ -383,8 +384,10 @@ def prepare_data_predict(source_path, dest_path, dest_path_predict_file, config_
     predict_d = [d_files_out[i].iloc[predict_i].reset_index(drop=True) for i in range(len(d_files_out))]
     headers_d = [[d_headers[i],]*len(d_files_out[i].columns) for i in range(len(d_headers))]
     headers = list()
+
     for i in range(len(headers_d)):
         headers = headers + headers_d[i]
+
     # save split data
     predict = pd.concat(predict_d, axis=1)
     predict.columns = [headers, predict.columns]
