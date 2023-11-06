@@ -5,6 +5,7 @@ import os
 import yaml
 import numpy as np
 import pandas as pd
+import sys
 from sklearn.model_selection import KFold
 from tensorflow.keras.utils import to_categorical
 from tensorflow.keras.models import Sequential
@@ -13,15 +14,22 @@ from tensorflow.keras.layers import MaxPooling2D
 from tensorflow.keras.layers import Dense
 from tensorflow.keras.layers import Flatten
 from tensorflow.keras.optimizers import SGD
+import ai4eosc_thunder_nowcast_ml.config as cfg
+from datetime import datetime
 
 currentFuncName = lambda n=0: sys._getframe(n + 1).f_code.co_name
 
-def print_log(log_line, verbose=True, time_stamp=True):
+
+def print_log(log_line, verbose=True, time_stamp=True, log_file=cfg.LOG_FILE_PATH):
     tm = ""
     if time_stamp:
         tm = datetime.now().strftime("%Y-%m-%d %H:%M:%S: ")
     if verbose:
-        print(tm + log_line)
+        if log_file is None:
+            print(tm + log_line)
+        else:
+            with open(log_file, 'a') as file:
+                file.write(tm + log_line + "\n")
 
 
 def mount_nextcloud(
@@ -93,22 +101,22 @@ def delete_old_files(dir_path, file_extension=".csv"):
 
 
 def make_dataset(csv_input_path, config_yaml):
-    csv_file = pd.read_csv(csv_input_path, na_filter=False, header=[0,1])
+    csv_file = pd.read_csv(csv_input_path, na_filter=False, header=[0, 1])
     col_ind_X = [i for i in range(len(csv_file.columns))
                  if csv_file.columns[i][0].split("__")[0] in eval(config_yaml['all_data_models'])
                     and csv_file.columns[i][1] in eval(config_yaml['ORP_list'])]
     col_ind_Y = [i for i in range(len(csv_file.columns))
                  if csv_file.columns[i][0].split("__")[0] == config_yaml['measurements']
                     and csv_file.columns[i][1] in eval(config_yaml['ORP_list'])]
-    data_X = csv_file.iloc[:,col_ind_X].values.tolist()
-    data_Y = csv_file.iloc[:,col_ind_Y].values.tolist()
+    data_X = csv_file.iloc[:, col_ind_X].values.tolist()
+    data_Y = csv_file.iloc[:, col_ind_Y].values.tolist()
     return (data_X, data_Y)
 
 
 def define_model(parameters):  # dotiahnut hodnoty z configu
     model = Sequential()
     parameters = parameters["model_parameters"]
-    
+
     # neural network architecture
     nn_layer = parameters["nn_layer"]
     for i in range(len(nn_layer)):
@@ -149,19 +157,19 @@ def define_model(parameters):  # dotiahnut hodnoty z configu
     keys = mcompile.keys()
     otherSettings = []
     s = list()
-    print(f"optimizer0 == {optimizer}")
+    print_log(f"optimizer0 == {optimizer}")
     for key in keys:
         if key == "optimizer":
             if mcompile["optimizer"] != "":
                 optimizer = mcompile["optimizer"]
-            optimizer = ["optimizer = " + optimizer,]
+            optimizer = ["optimizer = " + optimizer, ]
         elif key == "other_settings":
             otherSettings = [mcompile["other_settings"]]
         else:
             s.append(key + "=" + mcompile[key])
     s = otherSettings + optimizer + s
     s = ", ".join(s)
-    print("model.compile(" + s + ")")
+    print_log("model.compile(" + s + ")")
     eval("model.compile(" + s + ")")
     return model
 
@@ -171,7 +179,7 @@ def train_model(dataX, dataY, parameters):
     epochs = parameters["train_model_settings"]["epochs"]
     batch_size = parameters["train_model_settings"]["batch_size"]
     scores, histories, models = list(), list(), list()
-    
+
     kfold = KFold(n_folds, shuffle=True, random_state=1)  # prepare cross validation
     for train_ix, test_ix in kfold.split(dataX):  # enumerate splits
         model = define_model(parameters)  # define model
@@ -189,7 +197,7 @@ def train_model(dataX, dataY, parameters):
             verbose=0,
         )
         _, acc = model.evaluate(testX, testY, verbose=0)  # evaluate model
-        print("> %.3f" % (acc * 100.0))
+        print_log("> %.3f" % (acc * 100.0))
         scores.append(acc)  # stores scores
         histories.append(history)
         models.append(model)
@@ -213,7 +221,7 @@ def test_model(model, dataX, dataY=[]):
 
 def load_model(modelPath, parameters):
     model = define_model(parameters)
-    print(modelPath)
+    print_log(f"modelPath == {modelPath}")
     model.load_weights(modelPath, skip_mismatch=False, by_name=False, options=None)
     return model
 

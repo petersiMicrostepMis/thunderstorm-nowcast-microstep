@@ -11,7 +11,7 @@ import subprocess
 
 # identify basedir for the package
 BASE_DIR = os.path.dirname(os.path.normpath(os.path.dirname(__file__)))
-NAME = "ai4eosc_thunder_nowcast_ml" #subprocess.run(["python3", BASE_DIR + "/setup.py", "--name"], capture_output = True, text=True).stdout.strip("\n")
+NAME = "ai4eosc_thunder_nowcast_ml"  # subprocess.run(["python3", BASE_DIR + "/setup.py", "--name"], capture_output = True, text=True).stdout.strip("\n")
 
 # default location for input and output data, e.g. directories 'data' and 'models',
 # is either set relative to the application path or via environment setting
@@ -47,7 +47,9 @@ CONFIG_DATA_DIR = os.path.join(IN_OUT_BASE_DIR, NAME + '/dataset/config')
 
 TIME_DIR_SUFFIX = datetime.now().strftime("%Y%m%d_%H%M%S")
 WORK_SAVE_DIR = os.path.join(IN_OUT_BASE_DIR, 'models')
-OUTPUT_NAME = lambda x : x + '_model_' + TIME_DIR_SUFFIX
+OUTPUT_NAME = lambda x : x + '_model_' + datetime.now().strftime("%Y%m%d_%H%M%S")  # TIME_DIR_SUFFIX
+
+LOG_FILE_PATH = "/tmp/log_" + NAME + ".txt"
 
 MODEL_FILE_NAME = "model.h5"
 CONFIG_YAML_NN_FILE_NAME = "CONFIG.yaml"
@@ -58,6 +60,11 @@ CONFIG_YAML_NN_PATH = os.path.join(BASE_DIR, CONFIG_YAML_NN_FILE_NAME)
 CONFIG_YAML_DATA_PATH = lambda x : os.path.join(CONFIG_DATA_DIR, CONFIG_YAML_DATA_FILE_NAME(x))
 
 
+class SerializedField(fields.Field):
+    def _serialize(self, value, attr, obj, **kwargs):
+        return str(value)
+
+
 # Input parameters for predict() (deepaas>=1.0.0)
 class PredictArgsSchema(Schema):
     class Meta:
@@ -65,16 +72,17 @@ class PredictArgsSchema(Schema):
 
     # full list of fields: https://marshmallow.readthedocs.io/en/stable/api_reference.html
     # to be able to upload a file for prediction
+
     get_default_configs = fields.Bool(
-        required = False,
-        missing = False,
-        description = "If True is selected, prediction returns default files (configuration, data)."
+        required=False,
+        missing=False,
+        description="If True is selected, prediction returns default files (configuration, data)."
     )
 
     use_last_data = fields.Bool(
-        required = False,
-        missing = True,
-        description = "If True is selected, new dataset won't be used."
+        required=False,
+        missing=True,
+        description="If True is selected, new dataset won't be used."
     )
 
     conf_nn = fields.Field(
@@ -149,37 +157,40 @@ class TrainArgsSchema(Schema):
     # available fields are e.g. fields.Integer(), fields.Str(), fields.Boolean()
     # full list of fields: https://marshmallow.readthedocs.io/en/stable/api_reference.html
     use_last_data = fields.Bool(
-        required = False,
-        missing = True,
-        description = "If True is selected, new dataset won't be used."
+        required=False,
+        missing=True,
+        description="If True is selected, new dataset won't be used."
     )
 
-#    conf_nn = fields.Field(
-#        required=False,
-#        missing=None,
-#        type="file",
-#        data_key="conf_nn_train",
-#        location="form",
-#        description="Select config YAML file for neural network architecture. Empty file -> default will be used."
-#    )
+    conf_nn = SerializedField(
+        required=False,
+        missing=None,
+        # dump_default=open('/home/peto/Downloads/empty.txt', mode='r'), # no effect
+        type="file",
+        data_key="conf_nn_train",
+        # location="form", # serialization error
+        description="Select config YAML file for neural network architecture. Empty file -> default will be used."
+    )
 
-#    conf_data = fields.Field(
-#        required=False,
-#        missing=None,
-#        type="file",
-#        data_key="conf_data_train",
-#        location="form",
-#        description="Select config YAML file for training. Empty file -> default will be used."
-#    )
+    conf_data = SerializedField(
+        required=False,
+        missing=None,
+        # dump_default=open('/home/peto/Downloads/empty.txt', mode='r'), # no effect
+        type="file",
+        data_key="conf_data_train",
+        # location="form", # serialization error
+        description="Select config YAML file for training. Empty file -> default will be used."
+    )
 
-#    data_train = fields.Field(
-#        required=False,
-#        missing=None,
-#        type="file",
-#        data_key="data_train",
-#        location="form",
-#        description="Select input data tar.gz file for training. Empty file -> nextcloud will be used."
-#    )
+    data_train = SerializedField(
+        required=False,
+        missing=None,
+        # dump_default=open('/home/peto/Downloads/empty.txt', mode='r'), # no effect
+        type="file",
+        data_key="data_train",
+        # location="form", # serialization error
+        description="Select input data tar.gz file for training. Empty file -> nextcloud will be used."
+    )
 
     urls_inp = fields.Url(
         required=False,
