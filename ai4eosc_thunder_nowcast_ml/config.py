@@ -30,7 +30,7 @@ SERVER_DATA_DIR = os.path.join(IN_OUT_BASE_DIR, 'data/raw')
 DEFAULT_DATA_TARGZ_FILENAME = "input_data.tar.gz"
 DEFAULT_DATA_TARGZ = os.path.join(SERVER_DATA_DIR, DEFAULT_DATA_TARGZ_FILENAME)
 DOWNLOADS_TMP = os.path.join(IN_OUT_BASE_DIR, 'data/downloads_tmp')
-NEXTCLOUD_DATA_DIR = ""
+NEXTCLOUD_DATA_DIR = "/storage/"
 NEXTCLOUD_INPUTS = os.path.join(IN_OUT_BASE_DIR, 'data/nextcloud_inputs')
 GUI_INPUTS = os.path.join(IN_OUT_BASE_DIR, 'data/gui_inputs')
 WORKING_DATA_DIR = os.path.join(IN_OUT_BASE_DIR, NAME + '/dataset/data_working_directory')
@@ -121,21 +121,29 @@ class PredictArgsSchema(Schema):
         description="Select input data tar.gz file for prediction. Empty file -> nextcloud will be used."
     )
 
-    urls_inp = fields.Url(
-        required=False,
-        missing=None,
-        description="Provide an URL of the data for the prediction. If empty file + no url -> default data will be used."
-    )
+#    urls_inp = fields.Url(
+#        required=False,
+#        missing=None,
+#        description="Provide an URL of the data for the prediction. If empty file + no url -> default data will be used."
+#    )
 
     output_name = fields.String(
         required=False, missing=None, description="Write output file name. Otherwise, some default name will be used."
     )
 
-    urls_out = fields.Url(
-        required=False,
-        missing=None,
-        description="Provide an URL for output the prediction. If no url -> output on screen."
+    path_inp = fields.String(
+        required=False, missing=None, description="Provide path in Nextcloud for input the training. If empty file + no url -> default data will be used."
     )
+
+    path_out = fields.String(
+        required=False, missing=None, description="Provide path in Nextcloud for output the training. If no path -> output on screen."
+    )
+
+#    urls_out = fields.Url(
+#        required=False,
+#        missing=None,
+#        description="Provide an URL for output the prediction. If no url -> output on screen."
+#    )
 
     accept = fields.Str(
         load_default="application/json",
@@ -192,21 +200,29 @@ class TrainArgsSchema(Schema):
         description="Select input data tar.gz file for training. Empty file -> nextcloud will be used."
     )
 
-    urls_inp = fields.Url(
-        required=False,
-        missing=None,
-        description="Provide an URL of the data for the training. If empty file + no url -> default data will be used."
-    )
+#    urls_inp = fields.Url(
+#        required=False,
+#        missing=None,
+#        description="Provide an URL of the data for the training. If empty file + no url -> default data will be used."
+#    )
 
     output_name = fields.String(
         required=False, missing=None, description="Write output file name. Otherwise, some default name will be used."
     )
 
-    urls_out = fields.Url(
-        required=False,
-        missing=None,
-        description="Provide an URL for output the training. If no url -> output on screen."
+    path_inp = fields.String(
+        required=False, missing=None, description="Provide path in Nextcloud for input the training. If empty file + no url -> default data will be used."
     )
+
+    path_out = fields.String(
+        required=False, missing=None, description="Provide path in Nextcloud for output the training. If no path -> output on screen."
+    )
+
+#    urls_out = fields.Url(
+#        required=False,
+#        missing=None,
+#        description="Provide an URL for output the training. If no url -> output on screen."
+#    )
 
     accept = fields.Str(
         load_default="application/json",

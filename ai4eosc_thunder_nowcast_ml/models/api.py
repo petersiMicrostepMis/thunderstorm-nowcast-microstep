@@ -153,6 +153,10 @@ def set_kwargs(argument, arg2=None, **kwargs):
         return set_string_argument("urls_inp", "", **kwargs)
     elif argument == "urls_out":
         return set_string_argument("urls_out", "", **kwargs)
+    elif argument == "path_inp":
+        return set_string_argument("path_inp", "", preffix=cfg.NEXTCLOUD_DATA_DIR, **kwargs)
+    elif argument == "path_out":
+        return set_string_argument("path_out", "", preffix=cfg.NEXTCLOUD_DATA_DIR, **kwargs)
     elif argument == "get_default_configs":
         return set_bool_argument("get_default_configs", False, **kwargs)
     elif argument == "use_last_data":
@@ -367,7 +371,7 @@ def predict(**kwargs):
         _make_zipfile(output_dir_name, output_dir_name)
         print_log("OK", log_file=None)
         # send to nextcloud or on gui
-        if urls_out != "":
+        if path_out != "":
             if kwargs["accept"] == "application/json":
                 return open(output_dir_name + ".zip", 'rb', buffering=0)
             elif kwargs["accept"] == "application/zip":
@@ -392,8 +396,10 @@ def predict(**kwargs):
     model_hdf5_path = set_kwargs("model_hdf5", "predict", **kwargs)  # cfg.MODEL_FILE_PATH
     data_input_targz = set_kwargs("data_pred", **kwargs)  # cfg.DEFAULT_DATA_TARGZ
     output_name = set_kwargs("output_name", "predict", **kwargs)  # cfg.OUTPUT_NAME("predict")
-    urls_inp = set_kwargs("urls_inp", **kwargs)  # ""
-    urls_out = set_kwargs("urls_out", **kwargs)  # ""
+    # urls_inp = set_kwargs("urls_inp", **kwargs)  # ""
+    # urls_out = set_kwargs("urls_out", **kwargs)  # ""
+    path_inp = set_kwargs("path_out", **kwargs)
+    path_out = set_kwargs("path_out", **kwargs)
     get_default_configs = set_kwargs("get_default_configs", **kwargs)
     use_last_data = set_kwargs("use_last_data", **kwargs)
 
@@ -403,8 +409,8 @@ def predict(**kwargs):
     print_log(f"model_hdf5_path == {model_hdf5_path}")
     print_log(f"data_input_targz == {data_input_targz}")
     print_log(f"output_name == {output_name}")
-    print_log(f"urls_inp == {urls_inp}")
-    print_log(f"urls_out == {urls_out}")
+    print_log(f"path_inp == {path_inp}")
+    print_log(f"path_out == {path_out}")
     print_log(f"get_default_configs == {get_default_configs}")
     print_log(f"use_last_data == {use_last_data}")
 
@@ -471,10 +477,10 @@ def predict(**kwargs):
     print_log(f"os.path.join({cfg.GUI_INPUTS}, {filename})")
     os.remove(os.path.join(cfg.GUI_INPUTS, filename))
 
-    # copy file from urls_inp to cfg.NEXTCLOUD_INPUTS, untar/unzip
-    if urls_inp != "":
-        filename = os.path.basename(urls_inp)
-        mutils.rclone_directory(urls_inp, cfg.NEXTCLOUD_INPUTS)
+    # copy file from path_inp to cfg.NEXTCLOUD_INPUTS, untar/unzip
+    if path_inp != "":
+        filename = os.path.basename(path_inp)
+        mutils.rclone_directory(path_inp, cfg.NEXTCLOUD_INPUTS)
         tar = tarfile.open(os.path.join(cfg.NEXTCLOUD_INPUTS, filename))
         tar.extractall(cfg.NEXTCLOUD_INPUTS)
         tar.close()
@@ -614,7 +620,7 @@ def train(**kwargs):
         _make_zipfile(output_dir_name, output_dir_name)
         print_log("OK", log_file=None)
         # send to nextcloud or on gui
-        if urls_out != "":
+        if path_out != "":
             if kwargs["accept"] == "application/json":
                 return open(output_dir_name + ".zip", 'rb', buffering=0)
             elif kwargs["accept"] == "application/zip":
@@ -638,8 +644,10 @@ def train(**kwargs):
     conf_data_path = set_kwargs("conf_data", "train", **kwargs)  # cfg.CONFIG_YAML_DATA_PATH("train")
     data_input_targz = set_kwargs("data_pred", **kwargs)  # cfg.DEFAULT_DATA_TARGZ
     output_name = set_kwargs("output_name", "train", **kwargs)  # cfg.OUTPUT_NAME("train")
-    urls_inp = set_kwargs("urls_inp", **kwargs)  # ""
-    urls_out = set_kwargs("urls_out", **kwargs)  # ""
+    # urls_inp = set_kwargs("urls_inp", **kwargs)  # ""
+    # urls_out = set_kwargs("urls_out", **kwargs)  # ""
+    path_inp = set_kwargs("path_inp", **kwargs)  # ""
+    path_out = set_kwargs("path_out", **kwargs)  # ""
     use_last_data = set_kwargs("use_last_data", **kwargs)
 
     # print input
@@ -647,8 +655,8 @@ def train(**kwargs):
     print_log(f"conf_data_path == {conf_data_path}")
     print_log(f"data_input_targz == {data_input_targz}")
     print_log(f"output_name == {output_name}")
-    print_log(f"urls_inp == {urls_inp}")
-    print_log(f"urls_out == {urls_out}")
+    print_log(f"path_inp == {path_inp}")
+    print_log(f"path_out == {path_out}")
     print_log(f"use_last_data == {use_last_data}")
 
     # clean directories
@@ -699,10 +707,10 @@ def train(**kwargs):
     print_log(f"os.path.join({cfg.GUI_INPUTS}, {filename})")
     os.remove(os.path.join(cfg.GUI_INPUTS, filename))
 
-    # copy file from urls_inp to cfg.NEXTCLOUD_INPUTS, untar/unzip
-    if urls_inp != "":
-        filename = os.path.basename(urls_inp)
-        mutils.rclone_directory(urls_inp, cfg.NEXTCLOUD_INPUTS)
+    # copy file from path_inp to cfg.NEXTCLOUD_INPUTS, untar/unzip
+    if path_inp != "":
+        filename = os.path.basename(path_inp)
+        mutils.rclone_directory(path_inp, cfg.NEXTCLOUD_INPUTS)
         tar = tarfile.open(os.path.join(cfg.NEXTCLOUD_INPUTS, filename))
         tar.extractall(cfg.NEXTCLOUD_INPUTS)
         tar.close()
