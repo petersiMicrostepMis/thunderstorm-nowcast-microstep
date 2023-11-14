@@ -480,7 +480,8 @@ def predict(**kwargs):
     # copy file from path_inp to cfg.NEXTCLOUD_INPUTS, untar/unzip
     if path_inp != "":
         filename = os.path.basename(path_inp)
-        mutils.rclone_directory(path_inp, cfg.NEXTCLOUD_INPUTS)
+        # mutils.rclone_directory(path_inp, cfg.NEXTCLOUD_INPUTS)
+        shutil.copyfile(path_inp, cfg.NEXTCLOUD_INPUTS)
         tar = tarfile.open(os.path.join(cfg.NEXTCLOUD_INPUTS, filename))
         tar.extractall(cfg.NEXTCLOUD_INPUTS)
         tar.close()
@@ -710,7 +711,8 @@ def train(**kwargs):
     # copy file from path_inp to cfg.NEXTCLOUD_INPUTS, untar/unzip
     if path_inp != "":
         filename = os.path.basename(path_inp)
-        mutils.rclone_directory(path_inp, cfg.NEXTCLOUD_INPUTS)
+        # mutils.rclone_directory(path_inp, cfg.NEXTCLOUD_INPUTS)
+        shutil.copyfile(path_inp, cfg.NEXTCLOUD_INPUTS)
         tar = tarfile.open(os.path.join(cfg.NEXTCLOUD_INPUTS, filename))
         tar.extractall(cfg.NEXTCLOUD_INPUTS)
         tar.close()
