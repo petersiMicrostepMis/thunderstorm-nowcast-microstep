@@ -11,10 +11,8 @@ import subprocess
 
 # identify basedir for the package
 BASE_DIR = os.path.dirname(os.path.normpath(os.path.dirname(__file__)))
-<<<<<<< HEAD
 NAME = "ai4eosc_thunder_nowcast_ml"  # subprocess.run(["python3", BASE_DIR + "/setup.py", "--name"], capture_output = True, text=True).stdout.strip("\n")
-=======
-NAME = "uc-microstep-mis-ai4eosc_thunder_nowcast_ml"  # subprocess.run(["python3", BASE_DIR + "/setup.py", "--name"], capture_output = True, text=True).stdout.strip("\n")
+# NAME = "uc-microstep-mis-ai4eosc_thunder_nowcast_ml"  # subprocess.run(["python3", BASE_DIR + "/setup.py", "--name"], capture_output = True, text=True).stdout.strip("\n")
 
 # default location for input and output data, e.g. directories 'data' and 'models',
 # is either set relative to the application path or via environment setting
@@ -42,8 +40,7 @@ TRAIN_DIR = os.path.join(WORKING_DATA_DIR, "train")
 TRAIN_FILE = os.path.join(TRAIN_DIR, "train.csv")
 TEST_DIR = os.path.join(WORKING_DATA_DIR, "test")
 TEST_FILE = os.path.join(TEST_DIR, "test.csv")
-VALIDATION_DIR = os.path.join(WORKING_DATA_DIR, "validate")
-VALIDATION_FILE = os.path.join(VALIDATION_DIR, "validate.csv")
+VALIDATION_DIR = os.path.join(WORKING_DATA_DIR, "validate")VALIDATION_FILE = os.path.join(VALIDATION_DIR, "validate.csv")
 PREDICT_DIR = os.path.join(WORKING_DATA_DIR, "predict")
 PREDICT_FILE = os.path.join(VALIDATION_DIR, "predict.csv")
 CONFIG_DATA_DIR = os.path.join(IN_OUT_BASE_DIR, NAME + '/dataset/config')
