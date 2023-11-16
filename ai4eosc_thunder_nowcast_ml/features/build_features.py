@@ -10,7 +10,7 @@ base_directory = os.path.dirname(os.path.dirname(base_directory))
 sys.path.append(base_directory)
 
 # import project config.py
-import ai4eosc_thunder_nowcast_ml.config as cfg
+import uc-microstep-mis-ai4eosc_thunder_nowcast_ml.config as cfg
 import yaml
 import pandas as pd
 import csv

@@ -14,7 +14,7 @@ from tensorflow.keras.layers import MaxPooling2D
 from tensorflow.keras.layers import Dense
 from tensorflow.keras.layers import Flatten
 from tensorflow.keras.optimizers import SGD
-import ai4eosc_thunder_nowcast_ml.config as cfg
+import uc-microstep-mis-ai4eosc_thunder_nowcast_ml.config as cfg
 from datetime import datetime
 
 currentFuncName = lambda n=0: sys._getframe(n + 1).f_code.co_name

@@ -11,7 +11,7 @@ import subprocess
 
 # identify basedir for the package
 BASE_DIR = os.path.dirname(os.path.normpath(os.path.dirname(__file__)))
-NAME = "ai4eosc_thunder_nowcast_ml"  # subprocess.run(["python3", BASE_DIR + "/setup.py", "--name"], capture_output = True, text=True).stdout.strip("\n")
+NAME = "UC-MicroStep-MIS-ai4eosc_thunder_nowcast_ml"  # subprocess.run(["python3", BASE_DIR + "/setup.py", "--name"], capture_output = True, text=True).stdout.strip("\n")
 
 # default location for input and output data, e.g. directories 'data' and 'models',
 # is either set relative to the application path or via environment setting

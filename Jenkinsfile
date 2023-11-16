@@ -12,8 +12,8 @@ pipeline {
     environment {
         author_name = "MicroStep-MIS"
         author_email = "peter.sisan@microstep-mis.com, irina.malkin.ondik@microstep-mis.com, juraj.bartok@microstep-mis.com"
-        app_name = "ai4eosc_thunder_nowcast_ml"
-        job_location = "Pipeline-as-code/DEEP-OC-org/DEEP-OC-ai4eosc_thunder_nowcast_ml/${env.BRANCH_NAME}"
+        app_name = "uc-microstep-mis-ai4eosc_thunder_nowcast_ml"
+        job_location = "Pipeline-as-code/DEEP-OC-org/UC-MicroStep-MIS-DEEP-OC-ai4eosc_thunder_nowcast_ml/${env.BRANCH_NAME}"
     }
 
     stages {
