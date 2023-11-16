@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 import unittest
-import UC-MicroStep-MIS-ai4eosc_thunder_nowcast_ml.models.api as api
+import uc-microstep-mis-ai4eosc_thunder_nowcast_ml.models.api as api
 
 class TestModelMethods(unittest.TestCase):
 

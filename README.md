@@ -12,7 +12,7 @@ cd ai4eosc_thunder_nowcast_ml
 pip install -e .
 deepaas-run --listen-ip 0.0.0.0
 ```
-The associated Docker container for this module can be found in https://github.com/MicroStep-MIS/DEEP-OC-UC-MicroStep-MIS-ai4eosc_thunder_nowcast_ml.
+The associated Docker container for this module can be found in https://github.com/MicroStep-MIS/UC-MicroStep-MIS-DEEP-OC-ai4eosc_thunder_nowcast_ml.
 
 ## Project structure
 ```
