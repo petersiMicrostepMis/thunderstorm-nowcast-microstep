@@ -1,18 +1,18 @@
-ai4eosc_thunder_nowcast_ml
+UC-MicroStep-MIS-ai4eosc_thunder_nowcast_ml
 ==============================
 
-[![Build Status](https://jenkins.indigo-datacloud.eu/buildStatus/icon?job=Pipeline-as-code/DEEP-OC-org/ai4eosc_thunder_nowcast_ml/master)](https://jenkins.indigo-datacloud.eu/job/Pipeline-as-code/job/DEEP-OC-org/job/ai4eosc_thunder_nowcast_ml/job/master)
+[![Build Status](https://jenkins.indigo-datacloud.eu/buildStatus/icon?job=Pipeline-as-code/DEEP-OC-org/UC-MicroStep-MIS-ai4eosc_thunder_nowcast_ml/master)](https://jenkins.indigo-datacloud.eu/job/Pipeline-as-code/job/DEEP-OC-org/job/UC-MicroStep-MIS-ai4eosc_thunder_nowcast_ml/job/master)
 
 Thunderstorm nowcast based on radar data (for agrometeorology)
 
 To launch it, first install the package then run [deepaas](https://github.com/indigo-dc/DEEPaaS):
 ```bash
-git clone https://github.com/MicroStep-MIS/ai4eosc_thunder_nowcast_ml
+git clone https://github.com/MicroStep-MIS/UC-MicroStep-MIS-ai4eosc_thunder_nowcast_ml
 cd ai4eosc_thunder_nowcast_ml
 pip install -e .
 deepaas-run --listen-ip 0.0.0.0
 ```
-The associated Docker container for this module can be found in https://github.com/MicroStep-MIS/DEEP-OC-ai4eosc_thunder_nowcast_ml.
+The associated Docker container for this module can be found in https://github.com/MicroStep-MIS/UC-MicroStep-MIS-DEEP-OC-ai4eosc_thunder_nowcast_ml.
 
 ## Project structure
 ```
