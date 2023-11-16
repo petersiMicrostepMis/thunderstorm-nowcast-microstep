@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# UC-MicroStep-MIS-ai4eosc_thunder_nowcast_ml documentation build configuration file, created by
+# ai4eosc_thunder_nowcast_ml documentation build configuration file, created by
 # sphinx-quickstart.
 #
 # This file is execfile()d with the current directory set to its containing dir.
@@ -41,7 +41,7 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 # General information about the project.
-project = u'UC-MicroStep-MIS-ai4eosc_thunder_nowcast_ml'
+project = u'ai4eosc_thunder_nowcast_ml'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -184,8 +184,8 @@ latex_elements = {
 # (source start file, target name, title, author, documentclass [howto/manual]).
 latex_documents = [
     ('index',
-     'UC-MicroStep-MIS-ai4eosc_thunder_nowcast_ml.tex',
-     u'UC-MicroStep-MIS-UC-MicroStep-MIS-ai4eosc_thunder_nowcast_ml Documentation',
+     'ai4eosc_thunder_nowcast_ml.tex',
+     u'ai4eosc_thunder_nowcast_ml Documentation',
      u"MicroStep-MIS", 'manual'),
 ]
 
@@ -215,7 +215,7 @@ latex_documents = [
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
 man_pages = [
-    ('index', 'UC-MicroStep-MIS-ai4eosc_thunder_nowcast_ml', u'UC-MicroStep-MIS-UC-MicroStep-MIS-ai4eosc_thunder_nowcast_ml Documentation',
+    ('index', 'ai4eosc_thunder_nowcast_ml', u'ai4eosc_thunder_nowcast_ml Documentation',
      [u"MicroStep-MIS"], 1)
 ]
 
@@ -229,8 +229,8 @@ man_pages = [
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
 texinfo_documents = [
-    ('index', 'UC-MicroStep-MIS-ai4eosc_thunder_nowcast_ml', u'ai4eosc_thunder_nowcast_ml Documentation',
-     u"MicroStep-MIS", 'UC-MicroStep-MIS-ai4eosc_thunder_nowcast_ml',
+    ('index', 'ai4eosc_thunder_nowcast_ml', u'ai4eosc_thunder_nowcast_ml Documentation',
+     u"MicroStep-MIS", 'ai4eosc_thunder_nowcast_ml',
      'Thunderstorm nowcast based on radar data (for agrometeorology)', 'Miscellaneous'),
 ]
 

@@ -20,9 +20,9 @@ base_directory = os.path.dirname(os.path.abspath(__file__))
 base_directory = os.path.dirname(os.path.dirname(base_directory))
 sys.path.append(base_directory)
 # import project's config.py
-import uc-microstep-mis-ai4eosc_thunder_nowcast_ml.config as cfg
-import uc-microstep-mis-ai4eosc_thunder_nowcast_ml.features.build_features as bf
-import uc-microstep-mis-ai4eosc_thunder_nowcast_ml.models.model_utils as mutils
+import ai4eosc_thunder_nowcast_ml.config as cfg
+import ai4eosc_thunder_nowcast_ml.features.build_features as bf
+import ai4eosc_thunder_nowcast_ml.models.model_utils as mutils
 from tensorflow.keras.utils import to_categorical
 
 from aiohttp.web import HTTPBadRequest

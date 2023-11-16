@@ -1,5 +1,8 @@
 # -*- coding: utf-8 -*-
 import unittest
+<<<<<<< HEAD
+import ai4eosc_thunder_nowcast_ml.models.api as api
+=======
 import uc-microstep-mis-ai4eosc_thunder_nowcast_ml.models.api as api
 
 class TestModelMethods(unittest.TestCase):
@@ -18,7 +21,7 @@ class TestModelMethods(unittest.TestCase):
         Test that get_metadata() returns right values (subset)
         """
         self.assertEqual(self.meta['name'].lower().replace('-','_'),
-                        'UC-MicroStep-MIS-ai4eosc_thunder_nowcast_ml'.lower().replace('-','_'))
+                        'ai4eosc_thunder_nowcast_ml'.lower().replace('-','_'))
         self.assertEqual(self.meta['author'].lower(),
                          'MicroStep-MIS'.lower())
         self.assertEqual(self.meta['license'].lower(),

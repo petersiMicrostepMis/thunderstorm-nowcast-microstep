@@ -6,7 +6,7 @@
 import logging
 from pathlib import Path
 from dotenv import find_dotenv, load_dotenv
-# import uc-microstep-mis-ai4eosc_thunder_nowcast_ml.config as cfg
+# import ai4eosc_thunder_nowcast_ml.config as cfg
 
 
 def main(input_filepath, output_filepath):

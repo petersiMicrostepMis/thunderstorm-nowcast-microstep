@@ -1,9 +1,9 @@
-.. UC-MicroStep-MIS-ai4eosc_thunder_nowcast_ml documentation master file, created by
+.. ai4eosc_thunder_nowcast_ml documentation master file, created by
    sphinx-quickstart.
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-UC-MicroStep-MIS-ai4eosc_thunder_nowcast_ml documentation!
+ai4eosc_thunder_nowcast_ml documentation!
 ==============================================
 
 Contents:

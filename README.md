@@ -40,8 +40,8 @@ The associated Docker container for this module can be found in https://github.c
 ├── test-requirements.txt  <- The requirements file for the test environment
 │
 ├── setup.py               <- makes project pip installable (pip install -e .) so ai4eosc_thunder_nowcast_ml can be imported
-├── uc-microstep-mis-ai4eosc_thunder_nowcast_ml    <- Source code for use in this project.
-│   ├── __init__.py        <- Makes UC-MicroStep-MIS-ai4eosc_thunder_nowcast_ml a Python module
+├── ai4eosc_thunder_nowcast_ml    <- Source code for use in this project.
+│   ├── __init__.py        <- Makes ai4eosc_thunder_nowcast_ml a Python module
 │   │
 │   ├── dataset            <- Scripts to download or generate data
 │   │   └── make_dataset.py
