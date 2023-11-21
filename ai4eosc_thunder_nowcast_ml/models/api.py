@@ -173,7 +173,7 @@ def get_metadata():
     """
 
     module = __name__.split('.', 1)
-    module = ["py"]
+    # module = ["py"]
 
     try:
         pkg = pkg_resources.get_distribution(module[0])
