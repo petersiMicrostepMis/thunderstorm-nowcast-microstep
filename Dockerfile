@@ -68,8 +68,8 @@ RUN git clone https://github.com/ai4os/deep-start /srv/.deep-start && \
 ENV SHELL /bin/bash
 
 # Install user app
-#RUN git clone -b $branch --depth 1 https://github.com/MicroStep-MIS/thunderstorm-nowcast-microstep && \
-RUN git clone -b $branch --depth 1 https://github.com/ai4os-hub/thunderstorm-nowcast-microstep && \
+#RUN git clone -b $branch --depth 1 https://github.com/ai4os-hub/thunderstorm-nowcast-microstep && \
+RUN git clone -b $branch --depth 1 https://github.com/MicroStep-MIS/thunderstorm-nowcast-microstep && \
     cd thunderstorm-nowcast-microstep && \
     pip3 install --no-cache-dir -e . && \
     cd ..
