@@ -20,7 +20,7 @@ LABEL version='0.0.1'
 # Thunderstorm nowcast based on radar data (for agrometeorology)
 
 # What user branch to clone [!]
-ARG branch=master
+ARG branch=main
 
 # Install Ubuntu packages
 # - gcc is needed in Pytorch images because deepaas installation might break otherwise (see docs) (it is already installed in tensorflow images)
@@ -33,7 +33,6 @@ RUN DEBIAN_FRONTEND=noninteractive apt-get update && \
 
 # Update python packages
 # [!] Remember: DEEP API V2 only works with python>=3.6
-RUN python3 --version && pip3 install mlflow
 RUN python3 --version && \
     pip3 install --no-cache-dir --upgrade pip "setuptools<60.0.0" wheel
 
@@ -60,16 +59,18 @@ ENV RCLONE_CONFIG=/srv/.rclone/rclone.conf
 # Disable FLAAT authentication by default
 ENV DISABLE_AUTHENTICATION_AND_ASSUME_AUTHENTICATED_USER yes
 
-# install deep-start script
-RUN git clone https://github.com/deephdc/deep-start /srv/.deep-start && \
+# Initialization scripts
+# deep-start can install JupyterLab or VSCode if requested
+RUN git clone https://github.com/ai4os/deep-start /srv/.deep-start && \
     ln -s /srv/.deep-start/deep-start.sh /usr/local/bin/deep-start
 
 # Necessary for the Jupyter Lab terminal
 ENV SHELL /bin/bash
 
 # Install user app
-RUN git clone -b $branch --depth 1 https://github.com/MicroStep-MIS/UC-MicroStep-MIS-ai4eosc_thunder_nowcast_ml && \
-    cd UC-MicroStep-MIS-ai4eosc_thunder_nowcast_ml && \
+#RUN git clone -b $branch --depth 1 https://github.com/MicroStep-MIS/thunderstorm-nowcast-microstep && \
+RUN git clone -b $branch --depth 1 https://github.com/ai4os-hub/thunderstorm-nowcast-microstep && \
+    cd thunderstorm-nowcast-microstep && \
     pip3 install --no-cache-dir -e . && \
     cd ..
 
