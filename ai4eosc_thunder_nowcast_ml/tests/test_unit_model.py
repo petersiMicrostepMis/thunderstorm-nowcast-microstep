@@ -5,7 +5,7 @@ import ai4eosc_thunder_nowcast_ml.models.api as api
 class TestModelMethods(unittest.TestCase):
 
     def setUp(self):
-        self.meta = deep_api.get_metadata()
+        self.meta = api.get_metadata()
 
     def test_model_metadata_type(self):
         """
