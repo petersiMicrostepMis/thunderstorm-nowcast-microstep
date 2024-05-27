@@ -176,23 +176,23 @@ def merge_csv_files(d1_files, d2_files, m_files, tolerance):
         for i in range(len(d1_files)):
             d1_timestamps.append(d1_files[i].reset_index().sort_values(by=['timestamp', 'index']))
             d1_timestamps[i] = d1_timestamps[i][['timestamp', 'index']]
-            d1_timestamps[i].columns = ['timestamp', 'index_d1_'+str(j)]
+            d1_timestamps[i].columns = ['timestamp', 'index_d1_' + str(j)]
             j = j + 1
         print_log("Getting timestamp and indices for d2_files")
         for i in range(len(m_files)):
             m_timestamps.append(m_files[i].reset_index().sort_values(by=['timestamp', 'index']))
             m_timestamps[i] = m_timestamps[i][['timestamp', 'index']]
-            m_timestamps[i].columns = ['timestamp', 'index_m_'+str(j)]
+            m_timestamps[i].columns = ['timestamp', 'index_m_' + str(j)]
             j = j + 1
         print_log("Getting timestamp and indices for m_files")
         for i in range(len(d2_files)):
             d2_timestamps.append(d2_files[i].reset_index().sort_values(by=['timestamp', 'index']))
             d2_timestamps[i] = d2_timestamps[i][['timestamp', 'index']]
-            d2_timestamps[i].columns = ['timestamp', 'index_d2_'+str(j)]
+            d2_timestamps[i].columns = ['timestamp', 'index_d2_' + str(j)]
             j = j + 1
             # adding auxiliary row to d2 files - all zeros
             print_log("Adding auxiliary row to d2_files")
-            d2_files[i].loc[len(d2_files[i].index)] = len(d2_files[i].columns)*[0]
+            d2_files[i].loc[len(d2_files[i].index)] = len(d2_files[i].columns) * [0]
 
         # merging
         print_log("Merging d1_timestamps")
@@ -211,14 +211,14 @@ def merge_csv_files(d1_files, d2_files, m_files, tolerance):
         for i in range(len(d2_timestamps)):
             timestamps_indices = pd.merge_asof(timestamps_indices, d2_timestamps[i], on="timestamp",
                                                tolerance=tolerance, direction='nearest')
-        j = 1+len(d1_files)+len(m_files)
+        j = 1 + len(d1_files) + len(m_files)
         for i in range(len(d2_files)):
             print_log(f"{i}")
             print_log(f"{i+j}")
             print_log(f"{timestamps_indices.columns[j+i]}")
             print_log(f"{len(d2_files[i].index)-1}")
-            timestamps_indices[timestamps_indices.columns[j+i]] = timestamps_indices[
-                timestamps_indices.columns[j+i]].fillna(len(d2_files[i].index)-1)
+            timestamps_indices[timestamps_indices.columns[j + i]] = timestamps_indices[
+                timestamps_indices.columns[j + i]].fillna(len(d2_files[i].index)-1)
 
         j = 1
         for i in range(len(d1_files)):
@@ -226,15 +226,15 @@ def merge_csv_files(d1_files, d2_files, m_files, tolerance):
             print_log(f"{i+j}")
             print_log(f"{timestamps_indices.columns[i+j]}")
             print_log(f"{timestamps_indices[timestamps_indices.columns[i+j]]}")
-            d1_files[i] = d1_files[i].iloc[timestamps_indices[timestamps_indices.columns[i+j]]]
+            d1_files[i] = d1_files[i].iloc[timestamps_indices[timestamps_indices.columns[i + j]]]
         j = j + len(d1_files)
         for i in range(len(m_files)):
             print_log(f"{i}")
-            m_files[i] = m_files[i].iloc[timestamps_indices[timestamps_indices.columns[i+j]]]
+            m_files[i] = m_files[i].iloc[timestamps_indices[timestamps_indices.columns[i + j]]]
         j = j + len(m_files)
         for i in range(len(d2_files)):
             print_log(f"{i}")
-            d2_files[i] = d2_files[i].iloc[timestamps_indices[timestamps_indices.columns[i+j]]]
+            d2_files[i] = d2_files[i].iloc[timestamps_indices[timestamps_indices.columns[i + j]]]
 
         return d1_files, d2_files, m_files
     except Exception as err:
