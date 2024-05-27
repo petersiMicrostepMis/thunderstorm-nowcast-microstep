@@ -50,4 +50,4 @@ CONFIG_INOUTS_PRFX = "CONFIG_INOUT_"
 CONFIG_USERS_PRFX = "CONFIG_USER_"
 
 # log file (temp)
-LOG_FILE_PATH = "/tmp/log_" + NAME + ".txt"
+LOG_FILE_PATH = BASE_DIR + "/log_" + NAME + ".txt"
