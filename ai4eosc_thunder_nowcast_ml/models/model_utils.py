@@ -6,6 +6,7 @@ import os
 import numpy as np
 import pandas as pd
 import sys
+import ast
 from sklearn.model_selection import KFold
 from keras.utils import to_categorical
 from keras.models import Sequential
@@ -124,12 +125,12 @@ def make_dataset(csv_input_path, config_yaml):
         print_log(f"running {currentFuncName()}")
         csv_file = pd.read_csv(csv_input_path, na_filter=False, header=[0, 1])
         col_ind_X = [i for i in range(len(csv_file.columns))
-                     if csv_file.columns[i][0].split("__")[0] in eval(config_yaml['input_data_d1']) +
-                     eval(config_yaml['input_data_d2']) and csv_file.columns[i][1] in
-                     eval(config_yaml['dataset'][0]['ORP_list'])]
+                     if csv_file.columns[i][0].split("__")[0] in ast.literal_eval(config_yaml['input_data_d1']) +
+                     ast.literal_eval(config_yaml['input_data_d2']) and csv_file.columns[i][1] in
+                     ast.literal_eval(config_yaml['dataset'][0]['ORP_list'])]
         col_ind_Y = [i for i in range(len(csv_file.columns))
                      if csv_file.columns[i][0].split("__")[0] == config_yaml['measurements']
-                     and csv_file.columns[i][1] in eval(config_yaml['dataset'][0]['ORP_list'])]
+                     and csv_file.columns[i][1] in ast.literal_eval(config_yaml['dataset'][0]['ORP_list'])]
         data_X = csv_file.iloc[:, col_ind_X].values.tolist()
         data_Y = csv_file.iloc[:, col_ind_Y].values.tolist()
         return (data_X, data_Y)
@@ -166,7 +167,7 @@ def define_model(parameters):  # dotiahnut hodnoty z configu
             s = otherSettings + s
             s = ", ".join(s)
             s = layerName + "(" + s + ")"
-            eval("model.add(" + s + ")")
+            ast.literal_eval("model.add(" + s + ")")
 
         # optimizer settings
         opt = parameters["optimizer"]
@@ -203,7 +204,7 @@ def define_model(parameters):  # dotiahnut hodnoty z configu
         s = otherSettings + optimizer + s
         s = ", ".join(s)
         print_log(f"{currentFuncName()}: model.compile(" + s + ")")
-        eval("model.compile(" + s + ")")
+        ast.literal_eval("model.compile(" + s + ")")
         return model
     except Exception as err:
         print_log(f"{currentFuncName()}: Unexpected {err=}, {type(err)=}")
