@@ -67,7 +67,7 @@ def zero_denominator(x, y):
     if y == 0:
         return np.NaN
     else:
-        return float(x/y)
+        return float(x / y)
 
 
 def table2abcd(table, event=1, no_event=0):
@@ -87,56 +87,56 @@ def metrics_ACC(table):
     # for binary classification
     print_log(f"running {currentFuncName()}")
     a, b, c, d = table2abcd(table)
-    return zero_denominator(a+d, a+b+c+d)
+    return zero_denominator(a + d, a + b + c + d)
 
 
 def metrics_F1(table):
     # for binary classification
     print_log(f"running {currentFuncName()}")
     a, b, c, d = table2abcd(table)
-    return zero_denominator(a, a+0.5*(b+c))
+    return zero_denominator(a, a + 0.5 * (b + c))
 
 
 def metrics_CSI(table):
     # for binary classification
     print_log(f"running {currentFuncName()}")
     a, b, c, d = table2abcd(table)
-    return zero_denominator(a, a+b+c)
+    return zero_denominator(a, a + b + c)
 
 
 def metrics_POD(table):
     # for binary classification
     print_log(f"running {currentFuncName()}")
     a, b, c, d = table2abcd(table)
-    return zero_denominator(a, a+c)
+    return zero_denominator(a, a + c)
 
 
 def metrics_MSI(table):
     # for binary classification
     print_log(f"running {currentFuncName()}")
     a, b, c, d = table2abcd(table)
-    return zero_denominator(c, a+c)
+    return zero_denominator(c, a + c)
 
 
 def metrics_FAR(table):
     # for binary classification
     print_log(f"running {currentFuncName()}")
     a, b, c, d = table2abcd(table)
-    return zero_denominator(b, a+b)
+    return zero_denominator(b, a + b)
 
 
 def metrics_HSS(table):
     # for binary classification
     print_log(f"running {currentFuncName()}")
     a, b, c, d = table2abcd(table)
-    return zero_denominator(2*(a*d-b*c), (a+c)*(c+d)+(a+b)*(b+d))
+    return zero_denominator(2 * (a * d - b * c), (a + c) * (c + d) + (a + b) * (b + d))
 
 
 def metrics_MAE(table):
     # for binary classification
     print_log(f"running {currentFuncName()}")
     a, b, c, d = table2abcd(table)
-    return zero_denominator(b+c, a+b+c+d)
+    return zero_denominator(b + c, a + b + c + d)
 
 
 def metrics_RMSE(table):
