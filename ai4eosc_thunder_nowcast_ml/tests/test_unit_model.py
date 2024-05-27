@@ -17,8 +17,8 @@ class TestModelMethods(unittest.TestCase):
         """
         Test that get_metadata() returns right values (subset)
         """
-        self.assertEqual(self.metadata['name'].lower().replace('-','_'),
-                         'ai4eosc_thunder_nowcast_ml'.lower().replace('-','_'))
+        self.assertEqual(self.metadata['name'].lower().replace('-', '_'),
+                         'ai4eosc_thunder_nowcast_ml'.lower().replace('-', '_'))
         self.assertEqual(self.metadata['author'].lower(),
                          'MicroStep-MIS'.lower())
         self.assertEqual(self.metadata['license'].lower(),
