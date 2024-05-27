@@ -28,7 +28,7 @@ def unlist(x):
             if isinstance(u, list):
                 v = v + u
             else:
-                v = v + [u,]
+                v = v + [u, ]
         return v
     else:
         return x
