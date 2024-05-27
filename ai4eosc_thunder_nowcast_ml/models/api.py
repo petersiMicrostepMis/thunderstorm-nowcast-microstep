@@ -433,13 +433,13 @@ def predict(**kwargs):
             cfg_file_pr = set_kwargs("cfg_file_pr", **kwargs)
             if option_pr == "Add new config to Data management configs":
                 save_as = cly.CONFIG_DATA_MANAGEMENT + "/" + cly.CONFIG_DATA_MANAGEMENT_PRFX + \
-                        new_config_file_name + ".yaml"
+                          new_config_file_name + ".yaml"
             elif option_pr == "Add new config to MLflow outputs configs":
                 save_as = cly.CONFIG_MLFLOW_OUTPUTS + "/" + cly.CONFIG_MLFLOW_OUTPUTS_PRFX + \
-                        new_config_file_name + ".yaml"
+                          new_config_file_name + ".yaml"
             elif option_pr == "Add new config to Neural networks configs":
                 save_as = cly.CONFIG_NEURAL_NETWORKS + "/" + cly.CONFIG_NEURAL_NETWORKS_PRFX + new_config_file_name + \
-                        ".yaml"
+                          ".yaml"
             elif option_pr == "Add new config to input/output settings":
                 save_as = cly.CONFIG_INOUTS + "/" + cly.CONFIG_INOUTS_PRFX + new_config_file_name + ".yaml"
             elif option_pr == "Add new config to MLflow user configs":
@@ -1095,9 +1095,8 @@ if __name__ == '__main__':
                                      add_help=False)
 
     cmd_parser = argparse.ArgumentParser()
-    subparsers = cmd_parser.add_subparsers(
-                            help='methods. Use \"api.py method --help\" to get more info',
-                            dest='method')
+    subparsers = cmd_parser.add_subparsers(help='methods. Use \"api.py method --help\" to get more info',
+                                           dest='method')
 
     # -------------------------------------------------------------------------------------
     # configure parser to call get_metadata()
