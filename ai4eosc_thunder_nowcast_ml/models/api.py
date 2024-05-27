@@ -635,7 +635,7 @@ def predict(**kwargs):
                 if isinstance(nnw_pr["model_parameters"][val1], list):
                     i = 0
                     for val2 in nnw_pr["model_parameters"][val1]:
-                        prfx = "_" + str(i+1)
+                        prfx = "_" + str(i + 1)
                         print_log(f"mlflow.log_param({val1}{prfx}, {val2})")
                         mlflow.log_param(val1 + prfx, val2)
                         i = i + 1
@@ -1017,7 +1017,7 @@ def train(**kwargs):
                 if isinstance(nnw_tr["model_parameters"][val1], list):
                     i = 0
                     for val2 in nnw_tr["model_parameters"][val1]:
-                        prfx = "_" + str(i+1)
+                        prfx = "_" + str(i + 1)
                         print_log(f"mlflow.log_param({val1}{prfx}, {val2})")
                         mlflow.log_param(val1 + prfx, val2)
                         i = i + 1
