@@ -60,6 +60,7 @@ def length(x):
     try:
         return len(x)
     except Exception as err:
+        print_log(f"Error in {currentFuncName()}: Can't return len(x)")
         return 0
 
 
