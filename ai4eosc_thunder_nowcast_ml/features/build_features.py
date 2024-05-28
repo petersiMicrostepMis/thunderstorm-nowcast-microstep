@@ -331,7 +331,7 @@ def prepare_data_train(source_path, dest_path, dest_path_train_file, dest_path_t
         print_log(f"ORPs == {ORPs}")
 
         make_raw_csv_data(source_path, dest_path,
-                          ast.literal_eval(config_yaml['input_data_d1']) + \
+                          ast.literal_eval(config_yaml['input_data_d1']) +
                           ast.literal_eval(config_yaml['input_data_d2']),
                           ast.literal_eval(config_yaml['input_data_sources']),
                           ast.literal_eval(config_yaml['use_columns']) + ORPs,
@@ -378,7 +378,7 @@ def prepare_data_train(source_path, dest_path, dest_path_train_file, dest_path_t
             print_log(f"i == {i}")
             for j in range(len(config_yaml['dataset'])):
                 print_log(f"j == {j}")
-                use_columns = list(ast.literal_eval(config_yaml['use_columns']) + \
+                use_columns = list(ast.literal_eval(config_yaml['use_columns']) +
                                    ast.literal_eval(config_yaml['dataset'][j]['ORP_list']))
                 print_log(f"use_columns == {use_columns}")
                 if j == 0:
@@ -399,7 +399,7 @@ def prepare_data_train(source_path, dest_path, dest_path_train_file, dest_path_t
             print_log(f"i == {i}")
             for j in range(len(config_yaml['dataset'])):
                 print_log(f"j == {j}")
-                use_columns = list(ast.literal_eval(config_yaml['use_columns']) + \
+                use_columns = list(ast.literal_eval(config_yaml['use_columns']) +
                                    ast.literal_eval(config_yaml['dataset'][j]['ORP_list']))
                 print_log(f"use_columns == {use_columns}")
                 if j == 0:
@@ -420,7 +420,7 @@ def prepare_data_train(source_path, dest_path, dest_path_train_file, dest_path_t
             print_log(f"i == {i}")
             for j in range(len(config_yaml['dataset'])):
                 print_log(f"j == {j}")
-                use_columns = list(ast.literal_eval(config_yaml['use_columns']) + \
+                use_columns = list(ast.literal_eval(config_yaml['use_columns']) +
                                    ast.literal_eval(config_yaml['dataset'][j]['ORP_list']))
                 use_columns = [x for x in use_columns if x in m_files[i].columns]
                 if j == 0:
@@ -495,13 +495,13 @@ def prepare_data_test(source_path, dest_path, dest_path_test_file, config_yaml):
             make_raw_csv_data(source_path, dest_path,
                               ast.literal_eval(config_yaml['all_data_models']),
                               ast.literal_eval(config_yaml['all_data_sources']),
-                              ast.literal_eval(config_yaml['use_columns']) + \
+                              ast.literal_eval(config_yaml['use_columns']) +
                               ast.literal_eval(config_yaml['dataset'][i]['ORP_list']),
                               config_yaml['forecast_time'])
             make_raw_csv_data(source_path, dest_path,
                               config_yaml['measurements'],
                               ast.literal_eval(config_yaml['all_data_sources']),
-                              ast.literal_eval(config_yaml['use_columns']) + \
+                              ast.literal_eval(config_yaml['use_columns']) +
                               ast.literal_eval(config_yaml['dataset'][i]['ORP_list']))
 
         # load_csv_files
@@ -607,7 +607,7 @@ def prepare_data_predict(source_path, dest_path, dest_path_predict_file, config_
             print_log(f"i == {i}")
             for j in range(len(config_yaml['dataset'])):
                 print_log(f"j == {j}")
-                use_columns = list(ast.literal_eval(config_yaml['use_columns']) + \
+                use_columns = list(ast.literal_eval(config_yaml['use_columns']) +
                                    ast.literal_eval(config_yaml['dataset'][j]['ORP_list']))
                 print_log(f"use_columns == {use_columns}")
                 if j == 0:
@@ -628,7 +628,7 @@ def prepare_data_predict(source_path, dest_path, dest_path_predict_file, config_
             print_log(f"i == {i}")
             for j in range(len(config_yaml['dataset'])):
                 print_log(f"j == {j}")
-                use_columns = list(ast.literal_eval(config_yaml['use_columns']) + \
+                use_columns = list(ast.literal_eval(config_yaml['use_columns']) +
                                    ast.literal_eval(config_yaml['dataset'][j]['ORP_list']))
                 print_log(f"use_columns == {use_columns}")
                 if j == 0:
@@ -649,7 +649,7 @@ def prepare_data_predict(source_path, dest_path, dest_path_predict_file, config_
             print_log(f"i == {i}")
             for j in range(len(config_yaml['dataset'])):
                 print_log(f"j == {j}")
-                use_columns = list(ast.literal_eval(config_yaml['use_columns']) + \
+                use_columns = list(ast.literal_eval(config_yaml['use_columns']) +
                                    ast.literal_eval(config_yaml['dataset'][j]['ORP_list']))
                 use_columns = [x for x in use_columns if x in m_files[i].columns]
                 if j == 0:
