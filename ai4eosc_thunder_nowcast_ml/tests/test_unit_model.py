@@ -4,7 +4,7 @@ import ai4eosc_thunder_nowcast_ml.models.api as api
 
 
 class TestModelMethods(unittest.TestCase):
- 
+
     def setUp(self):
         self.meta = api.get_metadata()
 
@@ -24,6 +24,7 @@ class TestModelMethods(unittest.TestCase):
                          'MicroStep-MIS'.lower())
         self.assertEqual(self.meta['license'].lower(),
                          'MIT'.lower())
+
 
 if __name__ == '__main__':
     unittest.main()
