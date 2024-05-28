@@ -399,7 +399,7 @@ def prepare_data_train(source_path, dest_path, dest_path_train_file, dest_path_t
             print_log(f"i == {i}")
             for j in range(len(config_yaml['dataset'])):
                 print_log(f"j == {j}")
-                use_columns = list(ast.literal_eval(config_yaml['use_columns']) 
+                use_columns = list(ast.literal_eval(config_yaml['use_columns']) + \
                                    ast.literal_eval(config_yaml['dataset'][j]['ORP_list']))
                 print_log(f"use_columns == {use_columns}")
                 if j == 0:
