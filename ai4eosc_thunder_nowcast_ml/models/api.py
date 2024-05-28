@@ -42,8 +42,13 @@ def print_log(log_line, verbose=True, time_stamp=True, log_file=cly.LOG_FILE_PAT
         if log_file is None:
             print(tm + log_line)
         else:
-            with open(log_file, 'a') as file:
-                file.write(tm + log_line + "\n")
+            try:
+                with open(log_file, 'a') as file:
+                    file.write(tm + log_line + "\n")
+            except Exception as err:
+                print(f"Missing log file: {err}")
+                f = open(cly.LOG_FILE_PATH, "w")
+                f.close()
 
 
 def _catch_error(f):
