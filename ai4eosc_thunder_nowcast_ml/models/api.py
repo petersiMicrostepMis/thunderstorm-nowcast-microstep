@@ -184,7 +184,7 @@ def get_metadata():
     :return:
     """
 
-    print_log(f"{currentFuncName()}:")
+    # print_log(f"{currentFuncName()}:") # comment 2024-05-29
     module = __name__.split('.', 1)
     # module = ["py"]
 
