@@ -528,13 +528,13 @@ def predict(**kwargs):
         else:
             prediction_outfilename = ino_pr["train_outfilename"]
 
-        print_log(f"tar = tarfile.open(os.path.join({cly.RAW_DATA_DIR}, {targz_data_name}))")
-        tar = tarfile.open(os.path.join(cly.RAW_DATA_DIR, targz_data_name))
+        # print_log(f"tar = tarfile.open(os.path.join({cly.RAW_DATA_DIR}, {targz_data_name}))")
+        # tar = tarfile.open(os.path.join(cly.RAW_DATA_DIR, targz_data_name))
         try:
             print_log(f"tar.extractall({cly.RAW_DATA_DIR}, members=function(tar))")
-            tar.extractall(cly.RAW_DATA_DIR, members=function(tar))
-            print_log("tar.close()")
-            tar.close()
+            # tar.extractall(cly.RAW_DATA_DIR, members=function(tar))
+            # print_log("tar.close()")
+            # tar.close()
         except Exception as e:
             print_log(f"{currentFuncName()}: Error in creating tar file. Exception: {e}")
 
@@ -839,13 +839,13 @@ def train(**kwargs):
         else:
             validation_outfilename = ino_tr["validation_outfilename"]
 
-        print_log(f"tar = tarfile.open(os.path.join({cly.RAW_DATA_DIR}, {targz_data_name}))")
-        tar = tarfile.open(os.path.join(cly.RAW_DATA_DIR, targz_data_name))
+        # print_log(f"tar = tarfile.open(os.path.join({cly.RAW_DATA_DIR}, {targz_data_name}))")
+        # tar = tarfile.open(os.path.join(cly.RAW_DATA_DIR, targz_data_name))
         try:
             print_log(f"tar.extractall({cly.RAW_DATA_DIR}, members=function(tar))")
-            tar.extractall(cly.RAW_DATA_DIR, members=function(tar))
-            print_log("tar.close()")
-            tar.close()
+            # tar.extractall(cly.RAW_DATA_DIR, members=function(tar))
+            # print_log("tar.close()")
+            # tar.close()
         except Exception as e:
             print_log(f"{currentFuncName()}: Error in creating tarfile. Exception: {e}")
 
