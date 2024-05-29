@@ -531,8 +531,8 @@ def predict(**kwargs):
         print_log(f"tar = tarfile.open(os.path.join({cly.RAW_DATA_DIR}, {targz_data_name}))")
         tar = tarfile.open(os.path.join(cly.RAW_DATA_DIR, targz_data_name))
         try:
-            print_log(f"tar.extractall({cly.RAW_DATA_DIR}, members=function(tarfile))")
-            tar.extractall(cly.RAW_DATA_DIR, members=function(tarfile))
+            print_log(f"tar.extractall({cly.RAW_DATA_DIR}, members=function(tar))")
+            tar.extractall(cly.RAW_DATA_DIR, members=function(tar))
             print_log("tar.close()")
             tar.close()
         except Exception as e:
@@ -842,8 +842,8 @@ def train(**kwargs):
         print_log(f"tar = tarfile.open(os.path.join({cly.RAW_DATA_DIR}, {targz_data_name}))")
         tar = tarfile.open(os.path.join(cly.RAW_DATA_DIR, targz_data_name))
         try:
-            print_log(f"tar.extractall({cly.RAW_DATA_DIR}, members=function(tarfile))")
-            tar.extractall(cly.RAW_DATA_DIR, members=function(tarfile))
+            print_log(f"tar.extractall({cly.RAW_DATA_DIR}, members=function(tar))")
+            tar.extractall(cly.RAW_DATA_DIR, members=function(tar))
             print_log("tar.close()")
             tar.close()
         except Exception as e:
