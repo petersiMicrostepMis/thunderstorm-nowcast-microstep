@@ -35,6 +35,7 @@ def currentFuncName(n=0):
 
 
 def print_log(log_line, verbose=True, time_stamp=True, log_file=cly.LOG_FILE_PATH):
+    log_file = None # 2024-05-29, only for debugging
     tm = ""
     if time_stamp:
         tm = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S: ")
