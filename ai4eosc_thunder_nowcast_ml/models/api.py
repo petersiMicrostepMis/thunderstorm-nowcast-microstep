@@ -35,7 +35,7 @@ def currentFuncName(n=0):
 
 
 def print_log(log_line, verbose=True, time_stamp=True, log_file=cly.LOG_FILE_PATH):
-    log_file = None # 2024-05-29, only for debugging
+    log_file = None  # 2024-05-29, only for debugging
     tm = ""
     if time_stamp:
         tm = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S: ")
@@ -531,8 +531,8 @@ def predict(**kwargs):
         print_log(f"tar = tarfile.open(os.path.join({cly.RAW_DATA_DIR}, {targz_data_name}))")
         tar = tarfile.open(os.path.join(cly.RAW_DATA_DIR, targz_data_name))
         try:
-            print_log(f"tar.extractall({cly.RAW_DATA_DIR})")
-            tar.extractall(cly.RAW_DATA_DIR)
+            print_log(f"tar.extractall({cly.RAW_DATA_DIR}, members=function(tarfile))")
+            tar.extractall(cly.RAW_DATA_DIR, members=function(tarfile))
             print_log("tar.close()")
             tar.close()
         except Exception as e:
@@ -842,8 +842,8 @@ def train(**kwargs):
         print_log(f"tar = tarfile.open(os.path.join({cly.RAW_DATA_DIR}, {targz_data_name}))")
         tar = tarfile.open(os.path.join(cly.RAW_DATA_DIR, targz_data_name))
         try:
-            print_log(f"tar.extractall({cly.RAW_DATA_DIR})")
-            tar.extractall(cly.RAW_DATA_DIR)
+            print_log(f"tar.extractall({cly.RAW_DATA_DIR}, members=function(tarfile))")
+            tar.extractall(cly.RAW_DATA_DIR, members=function(tarfile))
             print_log("tar.close()")
             tar.close()
         except Exception as e:
