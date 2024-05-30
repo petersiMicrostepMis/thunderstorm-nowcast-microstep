@@ -530,16 +530,10 @@ def predict(**kwargs):
 
         print_log(f"tar = tarfile.open(os.path.join({cly.RAW_DATA_DIR}, {targz_data_name}), mode='w:gz')")
         tar = tarfile.open(os.path.join(cly.RAW_DATA_DIR, targz_data_name), mode='w:gz')
-        # try:
-        # print_log(f"tar.extractall({cly.RAW_DATA_DIR}), members=function(tar)")
-        # tar.extractall(cly.RAW_DATA_DIR, members=function(tar))
-        # for name in ["file1", "file2", "file3"]:
         print_log(f"tar.add({cly.RAW_DATA_DIR})")
         tar.add(cly.RAW_DATA_DIR)
         print_log("tar.close()")
         tar.close()
-        # except Exception as e:
-        #    print_log(f"{currentFuncName()}: Error in creating tar file. Exception: {e}")
 
         print_log(f"os.path.join({cly.RAW_DATA_DIR}, {targz_data_name})")
         os.remove(os.path.join(cly.RAW_DATA_DIR, targz_data_name))
@@ -844,16 +838,10 @@ def train(**kwargs):
 
         print_log(f"tar = tarfile.open(os.path.join({cly.RAW_DATA_DIR}, {targz_data_name}), mode='w:gz')")
         tar = tarfile.open(os.path.join(cly.RAW_DATA_DIR, targz_data_name), mode='w:gz')
-        # try:
-        # print_log(f"tar.extractall({cly.RAW_DATA_DIR}), members=function(tar)")
-        # tar.extractall(cly.RAW_DATA_DIR, members=function(tar))
-        # for name in ["file1", "file2", "file3"]:
         print_log(f"tar.add({cly.RAW_DATA_DIR})")
         tar.add(cly.RAW_DATA_DIR)
         print_log("tar.close()")
         tar.close()
-        # except Exception as e:
-        #    print_log(f"{currentFuncName()}: Error in creating tarfile. Exception: {e}")
 
         print_log(f"os.path.join({cly.RAW_DATA_DIR}, {targz_data_name})")
         os.remove(os.path.join(cly.RAW_DATA_DIR, targz_data_name))
