@@ -185,9 +185,13 @@ def get_metadata():
     :return:
     """
 
-    # print_log(f"{currentFuncName()}:") # comment 2024-05-29
     module = __name__.split('.', 1)
     # module = ["py"]
+
+    # prepare log file
+    f = open(cly.LOG_FILE_PATH, "w")
+    f.close()
+    print_log(f"{currentFuncName()}:")
 
     try:
         pkg = pkg_resources.get_distribution(module[0])
@@ -370,8 +374,6 @@ def predict(**kwargs):
     :return:
     """
 
-    print_log(f"{currentFuncName()}:")
-
     def _before_return():
         # move log file
         print_log(f"shutil.move({cly.LOG_FILE_PATH}, {output_dir_name}/log_file.txt)")
@@ -405,6 +407,7 @@ def predict(**kwargs):
         # prepare log file
         f = open(cly.LOG_FILE_PATH, "w")
         f.close()
+        print_log(f"{currentFuncName()}:")
 
         # get input values - default values should be preset
         option_pr = set_kwargs("select_option_pr", **kwargs)
@@ -707,8 +710,6 @@ def train(**kwargs):
     :return:
     """
 
-    print_log(f"{currentFuncName()}:")
-
     def _before_return():
         # delete temp file
         # move log file
@@ -739,6 +740,7 @@ def train(**kwargs):
         # prepare log file
         f = open(cly.LOG_FILE_PATH, "w")
         f.close()
+        print_log(f"{currentFuncName()}:")
 
         # get input values - default values should be preset
         name_dtm_tr = set_kwargs("select_dtm_tr", **kwargs)
