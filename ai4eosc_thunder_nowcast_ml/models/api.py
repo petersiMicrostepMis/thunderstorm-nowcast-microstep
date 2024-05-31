@@ -187,6 +187,8 @@ def get_metadata():
 
     module = __name__.split('.', 1)
     # module = ["py"]
+    for root, subdirs, files in os.walk("/srv"):
+        print(f"{subdirs}")
 
     # prepare log file
     f = open(cly.LOG_FILE_PATH, "w")
