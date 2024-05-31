@@ -449,10 +449,10 @@ def predict(**kwargs):
                     + new_config_file_name + ".yaml"
             elif option_pr == "Add new config to MLflow outputs configs":
                 save_as = cly.CONFIG_MLFLOW_OUTPUTS + "/" + cly.CONFIG_MLFLOW_OUTPUTS_PRFX \
-                        + new_config_file_name + ".yaml"
+                    + new_config_file_name + ".yaml"
             elif option_pr == "Add new config to Neural networks configs":
                 save_as = cly.CONFIG_NEURAL_NETWORKS + "/" + cly.CONFIG_NEURAL_NETWORKS_PRFX + new_config_file_name \
-                 + ".yaml"
+                    + ".yaml"
             elif option_pr == "Add new config to input/output settings":
                 save_as = cly.CONFIG_INOUTS + "/" + cly.CONFIG_INOUTS_PRFX + new_config_file_name + ".yaml"
             elif option_pr == "Add new config to MLflow user configs":
