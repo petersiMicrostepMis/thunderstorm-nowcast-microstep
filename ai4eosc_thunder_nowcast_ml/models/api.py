@@ -187,8 +187,11 @@ def get_metadata():
 
     module = __name__.split('.', 1)
     # module = ["py"]
-    for root, subdirs, files in os.walk("/srv"):
-        print(f"{subdirs}")
+    try:
+        for root, subdirs, files in os.walk("/srv/thunderstorm-nowcast-microstep"):
+            print(f"{subdirs}")
+    except Exception as e:
+        print(f"/srv/thunderstorm-nowcast-microstep doesn't exist. {e}")
 
     # prepare log file
     f = open(cly.LOG_FILE_PATH, "w")
