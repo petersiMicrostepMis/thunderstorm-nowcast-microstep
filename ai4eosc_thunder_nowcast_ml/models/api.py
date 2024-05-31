@@ -189,11 +189,6 @@ def get_metadata():
 
     module = __name__.split('.', 1)
     # module = ["py"]
-    try:
-        for root, subdirs, files in os.walk("/srv/thunderstorm-nowcast-microstep"):
-            print(f"{subdirs}")
-    except Exception as e:
-        print(f"/srv/thunderstorm-nowcast-microstep doesn't exist. {e}")
 
     # prepare log file
     print(f"os.makedirs(os.path.dirname({cly.LOG_FILE_PATH}), exist_ok=True)")
@@ -450,14 +445,14 @@ def predict(**kwargs):
         if option_pr not in ["Prediction", "Get all config files"]:
             cfg_file_pr = set_kwargs("cfg_file_pr", **kwargs)
             if option_pr == "Add new config to Data management configs":
-                save_as = cly.CONFIG_DATA_MANAGEMENT + "/" + cly.CONFIG_DATA_MANAGEMENT_PRFX + \
-                new_config_file_name + ".yaml"
+                save_as = cly.CONFIG_DATA_MANAGEMENT + "/" + cly.CONFIG_DATA_MANAGEMENT_PRFX \
+                          + new_config_file_name + ".yaml"
             elif option_pr == "Add new config to MLflow outputs configs":
-                save_as = cly.CONFIG_MLFLOW_OUTPUTS + "/" + cly.CONFIG_MLFLOW_OUTPUTS_PRFX + \
-                new_config_file_name + ".yaml"
+                save_as = cly.CONFIG_MLFLOW_OUTPUTS + "/" + cly.CONFIG_MLFLOW_OUTPUTS_PRFX \
+                          + new_config_file_name + ".yaml"
             elif option_pr == "Add new config to Neural networks configs":
-                save_as = cly.CONFIG_NEURAL_NETWORKS + "/" + cly.CONFIG_NEURAL_NETWORKS_PRFX + new_config_file_name + \
-                ".yaml"
+                save_as = cly.CONFIG_NEURAL_NETWORKS + "/" + cly.CONFIG_NEURAL_NETWORKS_PRFX + new_config_file_name \
+                          + ".yaml"
             elif option_pr == "Add new config to input/output settings":
                 save_as = cly.CONFIG_INOUTS + "/" + cly.CONFIG_INOUTS_PRFX + new_config_file_name + ".yaml"
             elif option_pr == "Add new config to MLflow user configs":
