@@ -194,6 +194,8 @@ def get_metadata():
         print(f"/srv/thunderstorm-nowcast-microstep doesn't exist. {e}")
 
     # prepare log file
+    print(f"os.makedirs(os.path.dirname({cly.LOG_FILE_PATH}), exist_ok=True)")
+    os.makedirs(os.path.dirname(cly.LOG_FILE_PATH), exist_ok=True)
     f = open(cly.LOG_FILE_PATH, "w")
     f.close()
     print_log(f"{currentFuncName()}:")
