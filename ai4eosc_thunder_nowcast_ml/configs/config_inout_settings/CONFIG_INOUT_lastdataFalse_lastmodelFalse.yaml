@@ -4,8 +4,8 @@ path_out: EOSC_runs
 output_name: EOSC_202406
 use_last_data: False
 use_last_model: False
-model_hdf5: ''  # model.h5
-targz_data_path: ''  # empty is default
+model_hdf5: 'models/model.h5'  # model.h5
+targz_data_path: 'data/input.tar.gz'  # empty is default
 train_outfilename: train_out.csv
 test_outfilename: test_out.csv
 validation_outfilename: validation_out.csv
