@@ -1,6 +1,6 @@
-data_source: server  # 'server' or 'nextcloud'
-send_outputs_to: server  # 'server' or 'nextcloud' or 'swagger'
-path_out: /opt/pyims/eosc/vystup
+data_source: nextcloud  # 'server' or 'nextcloud'
+send_outputs_to: nextcloud  # 'server' or 'nextcloud' or 'swagger'
+path_out: EOSC_runs
 output_name: test_20240321
 use_last_data: False
 use_last_model: False
