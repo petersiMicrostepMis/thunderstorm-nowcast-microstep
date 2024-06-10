@@ -1,7 +1,7 @@
 NAME = "ai4eosc_thunder_nowcast_ml"
 
 # working directory
-BASE_DIR = "/storage/thunderstorm-nowcast-microstep"  # "/srv/thunderstorm-nowcast-microstep"
+BASE_DIR = "/srv/thunderstorm-nowcast-microstep"
 WORKING_DATA_DIR = BASE_DIR + "/" + NAME + "/dataset/data_working_directory"
 RAW_DATA_DIR = WORKING_DATA_DIR + "/raw"
 TRAIN_DIR = WORKING_DATA_DIR + "/train"
@@ -50,4 +50,4 @@ CONFIG_INOUTS_PRFX = "CONFIG_INOUT_"
 CONFIG_USERS_PRFX = "CONFIG_USER_"
 
 # log file (temp)
-LOG_FILE_PATH = BASE_DIR + "/" + NAME + "/log_" + NAME + ".txt"
+LOG_FILE_PATH = NEXTCLOUD_DATA_DIR + "/log_" + NAME + ".txt"  # BASE_DIR + "/" + NAME + "/log_" + NAME + ".txt"
