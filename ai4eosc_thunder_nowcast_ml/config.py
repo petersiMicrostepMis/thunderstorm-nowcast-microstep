@@ -8,7 +8,6 @@ from webargs import fields, validate
 from marshmallow import Schema, INCLUDE
 # from datetime import datetime
 from . import config_layout as cly
-from enum import Enum
 
 # default location for input and output data, e.g. directories 'data' and 'models',
 # is either set relative to the application path or via environment setting
@@ -24,30 +23,57 @@ if 'APP_INPUT_OUTPUT_BASE_DIR' in os.environ:
         print(msg)
 
 
-def get_config_file_list(config_name, config_name_prefix):
+def get_config_file_list(config_name, config_name_prefix, src_name=""):
     file_list = []
     config_names = []
+    if src_name != "":
+        src_name = src_name + "_"
     try:
         for x in os.listdir(config_name):
             if x.startswith(config_name_prefix):
                 file_list.append(os.path.join(config_name, x))
                 name = x.split(config_name_prefix, 1)[1]
-                config_names.append(os.path.splitext(name)[0])
+                config_names.append(src_name + os.path.splitext(name)[0])
     except FileNotFoundError:
         print(f"There is no proper config file in {config_name} directory")
-    if len(file_list) == 0:
-        file_list = ["---"]
-        config_names = ["---"]
+    # if len(file_list) == 0:
+    #     file_list = ["---"]
+    #     config_names = ["---"]
     return file_list, config_names
 
 
-file_list_dtm, config_names_dtm = get_config_file_list(cly.CONFIG_DATA_MANAGEMENT, cly.CONFIG_DATA_MANAGEMENT_PRFX)
-file_list_mlo, config_names_mlo = get_config_file_list(cly.CONFIG_MLFLOW_OUTPUTS, cly.CONFIG_MLFLOW_OUTPUTS_PRFX)
-file_list_nnw, config_names_nnw = get_config_file_list(cly.CONFIG_NEURAL_NETWORKS, cly.CONFIG_NEURAL_NETWORKS_PRFX)
-file_list_ino, config_names_ino = get_config_file_list(cly.CONFIG_INOUTS, cly.CONFIG_INOUTS_PRFX)
-file_list_usr, config_names_usr = get_config_file_list(cly.CONFIG_USERS, cly.CONFIG_USERS_PRFX)
+file_list_dtm, config_names_dtm = [], []
+file_list_mlo, config_names_mlo = [], []
+file_list_nnw, config_names_nnw = [], []
+file_list_ino, config_names_ino = [], []
+file_list_usr, config_names_usr = [], []
+for src, src_name in zip([cly.SERVER_DEFAULT_CONFIGS_DIR, cly.NEXTCLOUD_CONFIG_DIR,
+                          cly.SERVER_USER_CONFIGS_DIR, cly.NEXTCLOUD_USER_CONFIG_DIR],
+                         ["server", "nextcloud", "server_user", "nextcloud_user"]):
+    file_list, config_names = get_config_file_list(src + "/" + cly.CONFIG_DATA_MANAGEMENT,
+                                                   cly.CONFIG_DATA_MANAGEMENT_PRFX, src_name)
+    file_list_dtm = file_list_dtm + file_list
+    config_names_dtm = config_names_dtm + config_names
 
-# LOG_FILE_PATH = cly.LOG_FILE_PATH
+    file_list, config_names = get_config_file_list(src + "/" + cly.CONFIG_MLFLOW_OUTPUTS,
+                                                   cly.CONFIG_MLFLOW_OUTPUTS_PRFX, src_name)
+    file_list_mlo = file_list_mlo + file_list
+    config_names_mlo = config_names_mlo + config_names
+
+    file_list, config_names = get_config_file_list(src + "/" + cly.CONFIG_NEURAL_NETWORKS,
+                                                   cly.CONFIG_NEURAL_NETWORKS_PRFX, src_name)
+    file_list_nnw = file_list_nnw + file_list
+    config_names_nnw = config_names_nnw + config_names
+
+    file_list, config_names = get_config_file_list(src + "/" + cly.CONFIG_INOUTS,
+                                                   cly.CONFIG_INOUTS_PRFX, src_name)
+    file_list_ino = file_list_ino + file_list
+    config_names_ino = config_names_ino + config_names
+
+    file_list, config_names = get_config_file_list(src + "/" + cly.CONFIG_USERS,
+                                                   cly.CONFIG_USERS_PRFX, src_name)
+    file_list_usr = file_list_usr + file_list
+    config_names_usr = config_names_usr + config_names
 
 
 class SerializedField(fields.Field):
@@ -122,13 +148,6 @@ class PredictArgsSchema(Schema):
             "description": "Returns a zip file with prediction results and used config files."
         },
     )
-
-
-class Season(Enum):
-    SPRING = 1
-    SUMMER = 2
-    AUTUMN = 3
-    WINTER = 4
 
 
 # Input parameters for train() (deepaas>=1.0.0)

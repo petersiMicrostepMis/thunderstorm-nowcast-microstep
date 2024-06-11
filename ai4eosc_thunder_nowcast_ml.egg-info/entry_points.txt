@@ -1,0 +1,2 @@
+[deepaas.v2.model]
+ai4eosc_thunder_nowcast_ml = ai4eosc_thunder_nowcast_ml.models.api

@@ -1,0 +1,38 @@
+input_data_d1: ('cotrec', 'persistence')
+input_data_d2: ('titan',)
+input_data_sources: ('cappi2000', 'vil')
+measurements: 'measurements'
+time_tolerance: 60000  # in milliseconds
+forecast_time: 10  # in minutes
+threshold_value: '(17, 1, 0)'  # first - threshold value, second - more or equal than threshold, third - less than threshold
+use_columns: '("timestamp", "forecast")'
+train:
+    seasons:
+      - years: '(2016, 2017, 2018)'
+        months: '()'
+        days: '()'
+test:
+    seasons:
+      - years: '(2019, 2020)'
+        months: '()'
+        days: '()'
+validate:
+    seasons:
+      - years: '(2019, 2020)'
+        months: '()'
+        days: '()'
+
+dataset:
+  - ORP_list: '("ORP1",)'
+  - ORP_list: '("ORP2",)'
+  - ORP_list: '("ORP3",)'
+  - ORP_list: '("ORP4",)'
+  - ORP_list: '("ORP5",)'
+  - ORP_list: '("ORP6",)'
+  - ORP_list: '("ORP7",)'
+  - ORP_list: '("ORP8",)'
+  - ORP_list: '("ORP9",)'
+  - ORP_list: '("ORP10",)'
+  - ORP_list: '("ORP11",)'
+  - ORP_list: '("ORP12",)'
+  - ORP_list: '("ORP13",)'

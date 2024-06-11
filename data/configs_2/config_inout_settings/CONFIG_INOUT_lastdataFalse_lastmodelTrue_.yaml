@@ -1,0 +1,20 @@
+data_source: server  # 'server' or 'nextcloud'
+send_outputs_to: server  # 'server' or 'nextcloud' or 'swagger'
+path_out: /opt/pyims/eosc/vystup
+output_name: test_20240610
+use_last_data: False
+use_last_model: True
+model_hdf5: ''  # model.h5
+targz_data_path: ''  # empty is default
+train_outfilename: train_out.csv
+test_outfilename: test_out.csv
+validation_outfilename: validation_out.csv
+prediction_outfilename: prediction_out.csv
+statistics:
+  - stat: contingency_table
+  - stat: F1
+  - stat: POD
+  - stat: FAR
+  - stat: ACC
+  - stat: RMSE
+  - stat: MAE

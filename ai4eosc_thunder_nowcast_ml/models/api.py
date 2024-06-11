@@ -201,11 +201,11 @@ def get_metadata():
         pkg = pkg_resources.get_distribution(module[0])
     except pkg_resources.RequirementParseError:
         # if called from CLI, try to get pkg from the path
-        distros = list(pkg_resources.find_distributions(cfg.BASE_DIR, only=True))
+        distros = list(pkg_resources.find_distributions(cly.BASE_DIR, only=True))
         if len(distros) == 1:
             pkg = distros[0]
         else:
-            pkg = pkg_resources.find_distributions(cfg.BASE_DIR, only=True)
+            pkg = pkg_resources.find_distributions(cly.BASE_DIR, only=True)
     except Exception as e:
         raise HTTPBadRequest(reason=e)
 
@@ -444,19 +444,26 @@ def predict(**kwargs):
 
         if option_pr not in ["Prediction", "Get all config files"]:
             cfg_file_pr = set_kwargs("cfg_file_pr", **kwargs)
+            if os.path.isdir(cly.NEXTCLOUD_USER_CONFIG_DIR):
+                save_dir = cly.NEXTCLOUD_USER_CONFIG_DIR
+            else:
+                save_dir = cly.SERVER_USER_CONFIGS_DIR
+
             if option_pr == "Add new config to Data management configs":
-                save_as = cly.CONFIG_DATA_MANAGEMENT + "/" + cly.CONFIG_DATA_MANAGEMENT_PRFX \
+                save_as = save_dir + "/" + cly.CONFIG_DATA_MANAGEMENT + "/" + cly.CONFIG_DATA_MANAGEMENT_PRFX \
                     + new_config_file_name + ".yaml"
             elif option_pr == "Add new config to MLflow outputs configs":
-                save_as = cly.CONFIG_MLFLOW_OUTPUTS + "/" + cly.CONFIG_MLFLOW_OUTPUTS_PRFX \
+                save_as = save_dir + "/" + cly.CONFIG_MLFLOW_OUTPUTS + "/" + cly.CONFIG_MLFLOW_OUTPUTS_PRFX \
                     + new_config_file_name + ".yaml"
             elif option_pr == "Add new config to Neural networks configs":
-                save_as = cly.CONFIG_NEURAL_NETWORKS + "/" + cly.CONFIG_NEURAL_NETWORKS_PRFX + new_config_file_name \
-                    + ".yaml"
+                save_as = save_dir + "/" + cly.CONFIG_NEURAL_NETWORKS + "/" + cly.CONFIG_NEURAL_NETWORKS_PRFX \
+                    + new_config_file_name + ".yaml"
             elif option_pr == "Add new config to input/output settings":
-                save_as = cly.CONFIG_INOUTS + "/" + cly.CONFIG_INOUTS_PRFX + new_config_file_name + ".yaml"
+                save_as = save_dir + "/" + cly.CONFIG_INOUTS + "/" + cly.CONFIG_INOUTS_PRFX + new_config_file_name \
+                    + ".yaml"
             elif option_pr == "Add new config to MLflow user configs":
-                save_as = cly.CONFIG_USERS + "/" + cly.CONFIG_USERS_PRFX + new_config_file_name + ".yaml"
+                save_as = save_dir + "/" + cly.CONFIG_USERS + "/" + cly.CONFIG_USERS_PRFX + new_config_file_name \
+                    + ".yaml"
             if os.path.isfile(save_as):
                 print_log(f"Config file {save_as} exists, updating is now forbidden")
             else:
@@ -714,7 +721,7 @@ def train(**kwargs):
     :return:
     """
 
-    def _before_return():
+    def _before_return(output_dir_name):
         # delete temp file
         # move log file
         print_log(f"shutil.move({cly.LOG_FILE_PATH}, {output_dir_name}/log_file.txt)")
@@ -736,9 +743,6 @@ def train(**kwargs):
         if ino_tr["send_outputs_to"] == "swagger" or kwargs["accept"] == "application/zip":
             print_log(f"open({output_dir_name}.zip, 'rb', buffering=0)", log_file=None)
             return open(output_dir_name + ".zip", 'rb', buffering=0)
-
-    message = {"status": "ok",
-               "training": []}
 
     try:
         # prepare log file
@@ -1054,13 +1058,13 @@ def train(**kwargs):
                    "training": []}
 
         # return output
-        _before_return()
+        _before_return(output_dir_name)
         _on_return()
         return message
 
     except Exception as err:
         print_log(f"{currentFuncName()}: Unexpected {err=}, {type(err)=}")
-        _before_return()
+        _before_return(cly.NEXTCLOUD_DATA_DIR)
         return 1
 
 
@@ -1072,7 +1076,6 @@ def main():
     (see below an example)
     """
 
-    print_log(f"{currentFuncName()}:")
     if args.method == 'get_metadata':
         meta = get_metadata()
         print(json.dumps(meta))
