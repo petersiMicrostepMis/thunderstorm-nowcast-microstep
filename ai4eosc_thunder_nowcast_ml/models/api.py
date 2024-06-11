@@ -393,9 +393,9 @@ def predict(**kwargs):
         print_log("OK", log_file=None)
         # send to nextcloud or on gui
         if ino_pr["send_outputs_to"] == "nextcloud":
-            print_log(f"shutil.move({output_dir_name}.zip, {cly.NEXTCLOUD_DATA_DIR}/{ino_pr['path_out']})",
+            print_log(f"shutil.move({output_dir_name}.zip, {cly.NEXTCLOUD}/{ino_pr['path_out']})",
                       log_file=None)
-            shutil.move(output_dir_name + ".zip", cly.NEXTCLOUD_DATA_DIR + "/" + ino_pr["path_out"])
+            shutil.move(output_dir_name + ".zip", cly.NEXTCLOUD + "/" + ino_pr["path_out"])
         if ino_pr["send_outputs_to"] == "swagger" or kwargs["accept"] == "application/zip":
             print_log(f"open({output_dir_name}.zip, 'rb', buffering=0)", log_file=None)
             return open(output_dir_name + ".zip", 'rb', buffering=0)
@@ -737,9 +737,9 @@ def train(**kwargs):
         print_log("OK", log_file=None)
         # send to nextcloud or on gui
         if ino_tr["send_outputs_to"] == "nextcloud":
-            print_log(f"shutil.move({output_dir_name}.zip, {cly.NEXTCLOUD_DATA_DIR}/{ino_tr['path_out']})",
+            print_log(f"shutil.move({output_dir_name}.zip, {cly.NEXTCLOUD}/{ino_tr['path_out']})",
                       log_file=None)
-            shutil.move(output_dir_name + ".zip", cly.NEXTCLOUD_DATA_DIR + "/" + ino_tr["path_out"])
+            shutil.move(output_dir_name + ".zip", cly.NEXTCLOUD + "/" + ino_tr["path_out"])
         if ino_tr["send_outputs_to"] == "swagger" or kwargs["accept"] == "application/zip":
             print_log(f"open({output_dir_name}.zip, 'rb', buffering=0)", log_file=None)
             return open(output_dir_name + ".zip", 'rb', buffering=0)
