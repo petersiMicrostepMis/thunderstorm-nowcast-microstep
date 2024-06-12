@@ -37,7 +37,6 @@ def currentFuncName(n=0):
 def print_log(log_line, verbose=True, time_stamp=True, log_file=cly.LOG_FILE_PATH):
     print(f"os.makedirs(os.path.dirname({cly.LOG_FILE_PATH}), exist_ok=True)")
     os.makedirs(os.path.dirname(cly.LOG_FILE_PATH), exist_ok=True)
-    log_file = None  # 2024-05-29, only for debugging
     tm = ""
     if time_stamp:
         tm = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S: ")
