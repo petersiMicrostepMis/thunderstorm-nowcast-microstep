@@ -550,7 +550,7 @@ def predict(**kwargs):
         # print_log("tar_names = tar.getnames()")
         # tar_names = tar.getnames()
         print_log(f"tar.extractall({cly.RAW_DATA_DIR}, members=members(tar))")
-        tar.extractall(cly.RAW_DATA_DIR, members=members(tar))
+        tar.extractall(cly.RAW_DATA_DIR, members=list(members(tar)))
         print_log("tar.close()")
         tar.close()
 
@@ -860,7 +860,7 @@ def train(**kwargs):
         # print_log("tar_names = tar.getnames()")
         # tar_names = tar.getnames()
         print_log(f"tar.extractall({cly.RAW_DATA_DIR}, members=members(tar))")
-        tar.extractall(cly.RAW_DATA_DIR, members=members(tar))
+        tar.extractall(cly.RAW_DATA_DIR, members=list(members(tar)))
         print_log("tar.close()")
         tar.close()
 
