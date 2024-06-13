@@ -545,8 +545,8 @@ def predict(**kwargs):
         tar = tarfile.open(os.path.join(cly.RAW_DATA_DIR, targz_data_name), mode='r:gz')
         print_log("tar_names = tar.getnames()")
         tar_names = tar.getnames()
-        print_log(f"tar.extractall({cly.RAW_DATA_DIR}, members={tar_names}, filter='data')")
-        tar.extractall(cly.RAW_DATA_DIR, members=tar_names, filter='data')
+        print_log(f"tar.extractall({cly.RAW_DATA_DIR}, members={tar_names})")
+        tar.extractall(cly.RAW_DATA_DIR, members=tar_names)
         print_log("tar.close()")
         tar.close()
 
@@ -851,8 +851,8 @@ def train(**kwargs):
         tar = tarfile.open(os.path.join(cly.RAW_DATA_DIR, targz_data_name), mode='r:gz')
         print_log("tar_names = tar.getnames()")
         tar_names = tar.getnames()
-        print_log(f"tar.extractall({cly.RAW_DATA_DIR}, members={tar_names}, filter='data')")
-        tar.extractall(cly.RAW_DATA_DIR, members=tar_names, filter='data')
+        print_log(f"tar.extractall({cly.RAW_DATA_DIR}, members={tar_names})")
+        tar.extractall(cly.RAW_DATA_DIR, members=tar_names)
         print_log("tar.close()")
         tar.close()
 
