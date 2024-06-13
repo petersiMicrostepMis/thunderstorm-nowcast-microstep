@@ -377,10 +377,6 @@ def predict(**kwargs):
     :return:
     """
 
-    def members(tar):
-        for member in tar.getmembers():
-            yield member
-
     def _before_return():
         # move log file
         print_log(f"shutil.move({cly.LOG_FILE_PATH}, {output_dir_name}/log_file.txt)")
@@ -547,10 +543,13 @@ def predict(**kwargs):
 
         print_log(f"tar = tarfile.open(os.path.join({cly.RAW_DATA_DIR}, {targz_data_name}), mode='r:gz')")
         tar = tarfile.open(os.path.join(cly.RAW_DATA_DIR, targz_data_name), mode='r:gz')
-        # print_log("tar_names = tar.getnames()")
-        # tar_names = tar.getnames()
-        print_log(f"tar.extractall({cly.RAW_DATA_DIR}, members=members(tar))")
-        tar.extractall(cly.RAW_DATA_DIR, members=list(members(tar)))
+
+        def members():
+            for member in tar.getmembers():
+                yield member
+
+        print_log(f"tar.extractall({cly.RAW_DATA_DIR}, members=members)")
+        tar.extractall(cly.RAW_DATA_DIR, members=members)
         print_log("tar.close()")
         tar.close()
 
@@ -726,10 +725,6 @@ def train(**kwargs):
     :return:
     """
 
-    def members(tar):
-        for member in tar.getmembers():
-            yield member
-
     def _before_return(output_dir_name):
         # delete temp file
         # move log file
@@ -857,10 +852,13 @@ def train(**kwargs):
 
         print_log(f"tar = tarfile.open(os.path.join({cly.RAW_DATA_DIR}, {targz_data_name}), mode='r:gz')")
         tar = tarfile.open(os.path.join(cly.RAW_DATA_DIR, targz_data_name), mode='r:gz')
-        # print_log("tar_names = tar.getnames()")
-        # tar_names = tar.getnames()
-        print_log(f"tar.extractall({cly.RAW_DATA_DIR}, members=members(tar))")
-        tar.extractall(cly.RAW_DATA_DIR, members=list(members(tar)))
+
+        def members():
+            for member in tar.getmembers():
+                yield member
+
+        print_log(f"tar.extractall({cly.RAW_DATA_DIR}, members=members)")
+        tar.extractall(cly.RAW_DATA_DIR, members=members)
         print_log("tar.close()")
         tar.close()
 
