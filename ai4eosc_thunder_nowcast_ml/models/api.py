@@ -854,9 +854,6 @@ def train(**kwargs):
         print_log("tar.close()")
         tar.close()
 
-        _before_return(output_dir_name)
-        _on_return()
-
         print_log(f"os.path.join({cly.RAW_DATA_DIR}, {targz_data_name})")
         os.remove(os.path.join(cly.RAW_DATA_DIR, targz_data_name))
 
