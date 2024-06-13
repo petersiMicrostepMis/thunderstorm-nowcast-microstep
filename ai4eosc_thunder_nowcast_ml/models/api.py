@@ -541,10 +541,12 @@ def predict(**kwargs):
         else:
             prediction_outfilename = ino_pr["train_outfilename"]
 
-        print_log(f"tar = tarfile.open(os.path.join({cly.RAW_DATA_DIR}, {targz_data_name}), mode='w:gz')")
-        tar = tarfile.open(os.path.join(cly.RAW_DATA_DIR, targz_data_name), mode='w:gz')
-        print_log(f"tar.add({cly.RAW_DATA_DIR})")
-        tar.add(cly.RAW_DATA_DIR)
+        print_log(f"tar = tarfile.open(os.path.join({cly.RAW_DATA_DIR}, {targz_data_name}), mode='r:gz')")
+        tar = tarfile.open(os.path.join(cly.RAW_DATA_DIR, targz_data_name), mode='r:gz')
+        print_log("tar_names = tar.getnames()")
+        tar_names = tar.getnames()
+        print_log(f"tar.extractall({cly.RAW_DATA_DIR}, members={tar_names}, filter='data')")
+        tar.extractall(cly.RAW_DATA_DIR, members=tar_names, filter='data')
         print_log("tar.close()")
         tar.close()
 
@@ -845,12 +847,17 @@ def train(**kwargs):
         else:
             validation_outfilename = ino_tr["validation_outfilename"]
 
-        print_log(f"tar = tarfile.open(os.path.join({cly.RAW_DATA_DIR}, {targz_data_name}), mode='w:gz')")
-        tar = tarfile.open(os.path.join(cly.RAW_DATA_DIR, targz_data_name), mode='w:gz')
-        print_log(f"tar.add({cly.RAW_DATA_DIR})")
-        tar.add(cly.RAW_DATA_DIR)
+        print_log(f"tar = tarfile.open(os.path.join({cly.RAW_DATA_DIR}, {targz_data_name}), mode='r:gz')")
+        tar = tarfile.open(os.path.join(cly.RAW_DATA_DIR, targz_data_name), mode='r:gz')
+        print_log("tar_names = tar.getnames()")
+        tar_names = tar.getnames()
+        print_log(f"tar.extractall({cly.RAW_DATA_DIR}, members={tar_names}, filter='data')")
+        tar.extractall(cly.RAW_DATA_DIR, members=tar_names, filter='data')
         print_log("tar.close()")
         tar.close()
+
+        _before_return(output_dir_name)
+        _on_return()
 
         print_log(f"os.path.join({cly.RAW_DATA_DIR}, {targz_data_name})")
         os.remove(os.path.join(cly.RAW_DATA_DIR, targz_data_name))

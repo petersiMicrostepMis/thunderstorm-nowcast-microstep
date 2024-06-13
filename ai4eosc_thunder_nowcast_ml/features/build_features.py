@@ -47,6 +47,7 @@ def load_config_yaml(pathYaml, part=""):
 def csv_data_to_one_file(source_path, dest_path, use_columns, forecast_time=None):
     try:
         print_log(f"running {currentFuncName()}")
+        print_log(f"source_path == {source_path}")
         data_files = os.listdir(source_path)
         data_files = [f for f in data_files if os.path.isfile(source_path + '/' + f)]
         df_csv_append = pd.DataFrame()
