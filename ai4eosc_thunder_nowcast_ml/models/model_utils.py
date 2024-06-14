@@ -168,7 +168,8 @@ def define_model(parameters):  # dotiahnut hodnoty z configu
             s = ", ".join(s)
             s = layerName + "(" + s + ")"
             print_log(f"model.add({str(s)})")
-            eval("model.add(" + str(s) + ")")  # ast.literal_
+            # eval("model.add(" + str(s) + ")")  # ast.literal_
+            model.add(ast.literal_eval(s))
 
         # optimizer settings
         opt = parameters["optimizer"]
