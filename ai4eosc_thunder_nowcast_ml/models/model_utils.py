@@ -10,10 +10,11 @@ import ast
 from sklearn.model_selection import KFold
 from keras.utils import to_categorical
 from keras.models import Sequential
-from keras.layers import Conv1D
-from keras.layers import MaxPooling2D
-from keras.layers import Dense
-from keras.layers import Flatten
+# from keras.layers import Conv1D
+# from keras.layers import MaxPooling2D
+# from keras.layers import Dense
+# from keras.layers import Flatten
+import keras.layers
 from keras.optimizers import SGD
 from .. import config as cfg
 from .. import config_layout as cly
@@ -167,9 +168,9 @@ def define_model(parameters):  # dotiahnut hodnoty z configu
             s = otherSettings + s
             s = ", ".join(s)
             s = layerName + "(" + s + ")"
-            print_log(f"model.add({str(s)})")
+            print_log(f"model.add(ast.literal_eval(keras.layers.{s}))")
             # eval("model.add(" + str(s) + ")")  # ast.literal_
-            model.add(ast.literal_eval(s))
+            model.add(ast.literal_eval("keras.layers." + s))
 
         # optimizer settings
         opt = parameters["optimizer"]
