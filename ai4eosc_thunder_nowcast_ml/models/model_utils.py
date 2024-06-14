@@ -168,8 +168,7 @@ def define_model(parameters):  # dotiahnut hodnoty z configu
             s = ", ".join(s)
             s = layerName + "(" + s + ")"
             print_log(f"eval(model.add({s}))")
-            eval("model.add(" + s + ")")  # ast.literal_
-            # model.add(ast.literal_eval("keras.layers." + s))
+            eval("model.add(" + s + ")")
 
         # optimizer settings
         opt = parameters["optimizer"]
@@ -205,8 +204,8 @@ def define_model(parameters):  # dotiahnut hodnoty z configu
                 s.append(key + "=" + mcompile[key])
         s = otherSettings + optimizer + s
         s = ", ".join(s)
-        print_log(f"{currentFuncName()}: model.compile(" + s + ")")
-        ast.literal_eval("model.compile(" + s + ")")
+        print_log(f"{currentFuncName()}: model.compile({s})")
+        eval("model.compile(" + s + ")")
         return model
     except Exception as err:
         print_log(f"{currentFuncName()}: Unexpected {err=}, {type(err)=}")
