@@ -1070,9 +1070,11 @@ def train(**kwargs):
         return message
 
     except Exception as err:
+        message = {"status": "error",
+                   "message": err}
         print_log(f"{currentFuncName()}: Unexpected {err=}, {type(err)=}")
         _before_return(cly.NEXTCLOUD_DATA_DIR)
-        return 1
+        return message
 
 
 # during development it might be practical
