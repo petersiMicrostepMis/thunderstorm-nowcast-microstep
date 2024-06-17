@@ -386,9 +386,12 @@ def predict(**kwargs):
         shutil.make_archive(output_filename, 'zip', source_dir)
 
     def _on_return(**kwargs):
+        date_suffix = ""
+        if os.path.isdir(output_dir_name):
+            date_suffix = "_" + datetime.datetime.now().strftime("_%Y%m%d_%H%M%S")
         # make tar.gz file
-        print_log(f"_make_zipfile({output_dir_name}, {output_dir_name}.zip)", log_file=None)
-        _make_zipfile(output_dir_name, output_dir_name)
+        print_log(f"_make_zipfile({output_dir_name}, {output_dir_name}{date_suffix}.zip)", log_file=None)
+        _make_zipfile(output_dir_name, output_dir_name + date_suffix)
         print_log("OK", log_file=None)
         # send to nextcloud or on gui
         if ino_pr["send_outputs_to"] == "nextcloud":
@@ -731,9 +734,12 @@ def train(**kwargs):
         shutil.make_archive(output_filename, 'zip', source_dir)
 
     def _on_return(**kwargs):
+        date_suffix = ""
+        if os.path.isdir(output_dir_name):
+            date_suffix = "_" + datetime.datetime.now().strftime("_%Y%m%d_%H%M%S")
         # make tar.gz file
-        print_log(f"_make_zipfile({output_dir_name}, {output_dir_name}.zip)", log_file=None)
-        _make_zipfile(output_dir_name, output_dir_name)
+        print_log(f"_make_zipfile({output_dir_name}, {output_dir_name}{date_suffix}.zip)", log_file=None)
+        _make_zipfile(output_dir_name, output_dir_name + date_suffix)
         print_log("OK", log_file=None)
         # send to nextcloud or on gui
         if ino_tr["send_outputs_to"] == "nextcloud":
