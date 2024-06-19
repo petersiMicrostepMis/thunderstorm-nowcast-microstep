@@ -736,7 +736,7 @@ def train(**kwargs):
     def _on_return(**kwargs):
         date_suffix = ""
         if os.path.isdir(output_dir_name):
-            date_suffix = "_" + datetime.datetime.now().strftime("_%Y%m%d_%H%M%S")
+            date_suffix = datetime.datetime.now().strftime("_%Y%m%d_%H%M%S")
         # make tar.gz file
         print_log(f"_make_zipfile({output_dir_name}, {output_dir_name}{date_suffix}.zip)", log_file=None)
         _make_zipfile(output_dir_name, output_dir_name + date_suffix)
@@ -788,17 +788,6 @@ def train(**kwargs):
         ino_tr = load_config_yaml_file(config_ino_tr_path)
         usr_tr = load_config_yaml_file(config_usr_tr_path)
 
-        # prepare output_name and deleted directories
-        if ino_tr["path_out"] == "":
-            save_dir = cly.WORK_SAVE_DIR
-        else:
-            save_dir = ino_tr["path_out"]
-        output_dir_name = os.path.join(save_dir, ino_tr["output_name"])
-        if os.path.isdir(output_dir_name) is True:
-            output_dir_name = output_dir_name + datetime.datetime.now().strftime("_%Y%m%d_%H%M%S")
-        print_log(f"os.makedirs({output_dir_name}, exist_ok=True)")
-        os.makedirs(output_dir_name, exist_ok=True)
-
         print_log(f"ino_tr['use_last_data'] == {ino_tr['use_last_data']}")
         if ino_tr["use_last_data"] is False:
             print_log(f"mutils.delete_old_files({cly.WORKING_DATA_DIR}, .csv)")
@@ -817,6 +806,18 @@ def train(**kwargs):
             data_source = ""
         elif ino_tr["data_source"] == "nextcloud":
             data_source = cly.NEXTCLOUD_DATA_DIR
+
+        # prepare output_name and deleted directories
+        if ino_tr["path_out"] == "":
+            save_dir = cly.WORK_SAVE_DIR
+        else:
+            save_dir = ino_tr["path_out"]
+        save_dir = os.path.join(data_source, save_dir)
+        output_dir_name = os.path.join(save_dir, ino_tr["output_name"])
+        if os.path.isdir(output_dir_name) is True:
+            output_dir_name = output_dir_name + datetime.datetime.now().strftime("_%Y%m%d_%H%M%S")
+        print_log(f"os.makedirs({output_dir_name}, exist_ok=True)")
+        os.makedirs(output_dir_name, exist_ok=True)
 
         # model HDF5
         if ino_tr["model_hdf5"] == "":
