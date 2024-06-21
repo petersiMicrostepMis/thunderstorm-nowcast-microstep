@@ -35,8 +35,6 @@ def currentFuncName(n=0):
 
 
 def print_log(log_line, verbose=True, time_stamp=True, log_file=cly.LOG_FILE_PATH):
-    print(f"os.makedirs(os.path.dirname({cly.LOG_FILE_PATH}), exist_ok=True)")
-    os.makedirs(os.path.dirname(cly.LOG_FILE_PATH), exist_ok=True)
     tm = ""
     if time_stamp:
         tm = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S: ")
@@ -44,12 +42,15 @@ def print_log(log_line, verbose=True, time_stamp=True, log_file=cly.LOG_FILE_PAT
         if log_file is None:
             print(tm + log_line)
         else:
+            print(tm + log_line)
+            print(f"os.makedirs(os.path.dirname({log_file}), exist_ok=True)")
+            os.makedirs(os.path.dirname(log_file), exist_ok=True)
             try:
                 with open(log_file, 'a') as file:
                     file.write(tm + log_line + "\n")
             except Exception as err:
                 print(f"Missing log file: {err}")
-                f = open(cly.LOG_FILE_PATH, "w")
+                f = open(log_file, "w")
                 f.close()
 
 

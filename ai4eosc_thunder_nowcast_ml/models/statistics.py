@@ -17,6 +17,7 @@ def print_log(log_line, verbose=True, time_stamp=True, log_file=cly.LOG_FILE_PAT
         if log_file is None:
             print(tm + log_line)
         else:
+            print(tm + log_line)
             with open(log_file, 'a') as file:
                 file.write(tm + log_line + "\n")
 
