@@ -20,7 +20,7 @@ SERVER_USER_CONFIGS_DIR = BASE_DIR + "/data/user_configs"
 NEXTCLOUD_CONFIG_DIR = NEXTCLOUD + "/EOSC_runs/configs"
 NEXTCLOUD_USER_CONFIG_DIR = NEXTCLOUD + "/EOSC_runs/user_configs"
 # CONFIG_DATA_DIR = BASE_DIR + "/" + NAME + "/configs"
-LOG_FILE_DIR = NEXTCLOUD + "/EOSC_runs/logs"  # BASE_DIR + "/" + NAME + "/log_files"
+LOG_FILE_DIR = BASE_DIR + "/" + NAME + "/log_files"
 
 # data on server
 DEFAULT_DATA_TARGZ_FILENAME = "input.tar.gz"

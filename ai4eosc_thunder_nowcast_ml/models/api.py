@@ -483,10 +483,15 @@ def predict(**kwargs):
         usr_pr = load_config_yaml_file(config_usr_pr_path)
 
         # prepare output_name and deleted directories
+        send_to = ""
+        if ino_pr["send_outputs_to"] == "nextcloud":
+            send_to = cly.NEXTCLOUD
+
         if ino_pr["path_out"] == "":
             save_dir = cly.WORK_SAVE_DIR
         else:
-            save_dir = ino_pr["path_out"]
+            save_dir = os.path.join(send_to, ino_pr["path_out"])
+
         output_dir_name = os.path.join(save_dir, ino_pr["output_name"])
         if os.path.isdir(output_dir_name) is True:
             output_dir_name = output_dir_name + datetime.datetime.now().strftime("_%Y%m%d_%H%M%S")
@@ -809,11 +814,15 @@ def train(**kwargs):
             data_source = cly.NEXTCLOUD_DATA_DIR
 
         # prepare output_name and deleted directories
+        send_to = ""
+        if ino_tr["send_outputs_to"] == "nextcloud":
+            send_to = cly.NEXTCLOUD
+
         if ino_tr["path_out"] == "":
             save_dir = cly.WORK_SAVE_DIR
         else:
-            save_dir = ino_tr["path_out"]
-        save_dir = os.path.join(data_source, save_dir)
+            save_dir = os.path.join(send_to, ino_tr["path_out"])
+
         output_dir_name = os.path.join(save_dir, ino_tr["output_name"])
         if os.path.isdir(output_dir_name) is True:
             output_dir_name = output_dir_name + datetime.datetime.now().strftime("_%Y%m%d_%H%M%S")
