@@ -12,6 +12,9 @@
   ],
   "license": "MIT",
   "date_creation": "2023-09-07",
+  "training_files_url": "https://share.services.ai4os.eu/index.php/apps/files/?dir=/EOSC_runs/data&fileid=4289691",
+  "dataset_url": "https://share.services.ai4os.eu/index.php/apps/files/?dir=/EOSC_runs/data&fileid=4289691",
+  "cite_url": "https://sandbox.zenodo.org/doi/10.5072/zenodo.56169",
   "sources": {
     "dockerfile_repo": "https://github.com/MicroStep-MIS/thunderstorm-nowcast-microstep",
     "docker_registry_repo": "ai4oshub/thunderstorm-nowcast-microstep",
