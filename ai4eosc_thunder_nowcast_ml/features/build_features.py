@@ -448,6 +448,56 @@ def prepare_data_train(source_path, dest_path, dest_path_train_file, dest_path_t
         m_files_out = values_in_df_to_classes(m_files, ast.literal_eval(config_yaml['dataset'][0]['ORP_list']),
                                               threshold, val1, val2)
 
+        # reset indices
+        for i in range(len(d1_files_out)):
+            d1_files_out[i] = d1_files_out[i].reset_index(drop=True)
+        for i in range(len(d2_files_out)):
+            d2_files_out[i] = d2_files_out[i].reset_index(drop=True)
+        for i in range(len(m_files_out)):
+            m_files_out[i] = m_files_out[i].reset_index(drop=True)
+
+        # omit all zeros
+        all_zeros = [True] * len(d1_files_out[0])
+        all_zeros_timestamp = [True] * len(d1_files_out[0])
+        use_columns = list(ast.literal_eval(config_yaml['use_columns']))
+        print_log(f"use_columns == {use_columns}")
+        for i in range(len(d1_files_out)):
+            print_log("d1_files_out")
+            cls = [clmn for clmn in d1_files_out[i].columns if clmn not in use_columns]
+            tmp = d1_files_out[i][cls]
+            all_zeros = np.logical_and(all_zeros, (tmp.T == 0).all())
+
+        for i in range(len(d2_files_out)):
+            print_log("d2_files_out")
+            cls = [clmn for clmn in d2_files_out[i].columns if clmn not in use_columns]
+            tmp = d2_files_out[i][cls]
+            all_zeros = np.logical_and(all_zeros, (tmp.T == 0).all())
+            all_zeros_timestamp = np.logical_and(all_zeros_timestamp, d2_files_out[i]['timestamp'] == 0)
+
+        for i in range(len(m_files_out)):
+            print_log("m_files_out")
+            cls = [clmn for clmn in m_files_out[i].columns if clmn not in use_columns]
+            tmp = m_files_out[i][cls]
+            all_zeros = np.logical_and(all_zeros, (tmp.T == 0).all())
+
+        all_zeros2 = np.logical_and(np.random.choice(2, size=len(all_zeros), p=(0.1, 0.9)).astype(bool),
+                                    all_zeros)
+        # print_log(f"np.shape(all_zeros2) == {np.shape(all_zeros2)}")
+        # print_log(f"np.sum(all_zeros) == {np.sum(all_zeros)}")
+        # print_log(f"np.sum(all_zeros2) == {np.sum(all_zeros2)}")
+
+        for i in range(len(d1_files_out)):
+            print_log("d1_files_out")
+            d1_files_out[i] = d1_files_out[i][~np.logical_or(np.logical_and(all_zeros, all_zeros_timestamp),
+                                                             all_zeros2)]
+        for i in range(len(d2_files_out)):
+            print_log("d2_files_out")
+            d2_files_out[i] = d2_files_out[i][~np.logical_or(np.logical_and(all_zeros, all_zeros_timestamp),
+                                                             all_zeros2)]
+        for i in range(len(m_files_out)):
+            print_log("m_files_out")
+            m_files_out[i] = m_files_out[i][~np.logical_or(np.logical_and(all_zeros, all_zeros_timestamp), all_zeros2)]
+
         # indices for train, test and validation
         train_i = get_proper_dates_indices(d1_files_out[0]['timestamp'] / 1000, config_yaml['train']['seasons'])
         test_i = get_proper_dates_indices(d1_files_out[0]['timestamp'] / 1000, config_yaml['test']['seasons'])

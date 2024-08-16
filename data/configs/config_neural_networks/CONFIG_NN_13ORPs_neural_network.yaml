@@ -4,7 +4,7 @@ model_parameters:
         other_settings: 5, (3, ) 
         activation: "'relu'"
         kernel_initializer: "'he_uniform'"
-        input_shape: '(3, 1)' #'(39, 1)' #len(data_X[0])
+        input_shape: '(39, 1)' #len(data_X[0])
 
       #- name: MaxPooling2D
       #  other_settings: '(2, 2)'
@@ -17,8 +17,8 @@ model_parameters:
         kernel_initializer: "'he_uniform'"
 
       - name: Dense
-        other_settings: '1' #'13' #len(data_Y[0])
-        activation:  "'sigmoid'"  #"'softsign'"
+        other_settings: '13' #len(data_Y[0])
+        activation: "'sigmoid'"  #"'softsign'"
 
     optimizer:
         name: 'SGD'

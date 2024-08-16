@@ -14,6 +14,7 @@ import numpy as np
 import os
 import sys
 import shutil
+import pandas as pd
 # import project's config.py
 from .. import config as cfg
 from .. import config_layout as cly
@@ -887,14 +888,15 @@ def train(**kwargs):
             bf.prepare_data_train(cly.RAW_DATA_DIR, cly.WORKING_DATA_DIR, cly.TRAIN_FILE, cly.TEST_FILE,
                                   cly.VALIDATION_FILE, dtm_tr)
 
-        print_log(f"dataTrainX, dataTrainY = mutils.make_dataset({cly.TRAIN_FILE}, dtm_tr)")
-        dataTrainX, dataTrainY = mutils.make_dataset(cly.TRAIN_FILE, dtm_tr)
+        print_log(f"dataTrainX, dataTrainY, dtrXcols, dtrYcols = mutils.make_dataset({cly.TRAIN_FILE}, dtm_tr)")
+        dataTrainX, dataTrainY, dtrXcols, dtrYcols = mutils.make_dataset(cly.TRAIN_FILE, dtm_tr)
 
-        print_log(f"dataTestX, dataTestY = mutils.make_dataset({cly.TEST_FILE}, dtm_tr)")
-        dataTestX, dataTestY = mutils.make_dataset(cly.TEST_FILE, dtm_tr)
+        print_log(f"dataTestX, dataTestY, dteXcols, dteYcols = mutils.make_dataset({cly.TEST_FILE}, dtm_tr)")
+        dataTestX, dataTestY, dteXcols, dteYcols = mutils.make_dataset(cly.TEST_FILE, dtm_tr)
 
-        print_log(f"dataValidationX, dataValidationY = mutils.make_dataset({cly.VALIDATION_FILE}, dtm_tr)")
-        dataValidationX, dataValidationY = mutils.make_dataset(cly.VALIDATION_FILE, dtm_tr)
+        print_log("dataValidationX, dataValidationY, dvalXcols, dvalYcols =")
+        print_log(f"mutils.make_dataset({cly.VALIDATION_FILE}, dtm_tr)")
+        dataValidationX, dataValidationY, dvalXcols, dvalYcols = mutils.make_dataset(cly.VALIDATION_FILE, dtm_tr)
 
         # copy data to output
         print_log("Copy data to output")
@@ -928,21 +930,34 @@ def train(**kwargs):
         mutils.save_model(trainModels[best_model_index], os.path.join(output_dir_name, model_hdf5_name))
 
         # write outputs train, test, validation
+        dataY_header = list(dtrYcols)
+        for i in range(len(dataY_header)):
+            dataY_header[i] = (dataY_header[i][0].replace("measurements", "dataTrainY"), dataY_header[i][1])
+        dataY_header = pd.MultiIndex.from_tuples(list(zip(*dataY_header)))
+        print_log(f"dataY_header == {dataY_header}")
+
+        model_response_header = list(dtrYcols)
+        for i in range(len(model_response_header)):
+            model_response_header[i] = (model_response_header[i][0].replace("measurements", "modelResponse"),
+                                        model_response_header[i][1])
+        model_response_header = pd.MultiIndex.from_tuples(list(zip(*model_response_header)))
+        print_log(f"model_response_header == {model_response_header}")
+
         print_log("Make prediction on train data")
         print_log(f"prediction_trn = mutils.test_model(trainModels[{best_model_index}],dataTrainX)")
         prediction_trn = mutils.test_model(trainModels[best_model_index], dataTrainX)
         print_log(f"mutils.append_new_column_to_csv({cly.TRAIN_FILE},{os.path.join(output_dir_name,train_outfilename)},\
-                  [dataTrainY, prediction_trn], ['dataTrainY', 'model_response'])")
+                  [dataTrainY, prediction_trn], [{dataY_header}, {model_response_header}])")
         mutils.append_new_column_to_csv(cly.TRAIN_FILE, (os.path.join(output_dir_name, train_outfilename)),
-                                        [dataTrainY, prediction_trn], ['dataTrainY', 'model_response'])
+                                        [dataTrainY, prediction_trn], [dataY_header, model_response_header])
 
         print_log("Make prediction on test data")
         print_log(f"prediction_tst, acc_tst = mutils.test_model(trainModels[{best_model_index}],dataTestX,dataTestY)")
         prediction_tst, acc_tst = mutils.test_model(trainModels[best_model_index], dataTestX, dataTestY)
         print_log(f"mutils.append_new_column_to_csv({cly.TEST_FILE},{os.path.join(output_dir_name,test_outfilename)},\
-                  [dataTestY, prediction_tst], ['dataTestY', 'model_response'])")
+                  [dataTestY, prediction_tst], [{dataY_header}, {model_response_header}])")
         mutils.append_new_column_to_csv(cly.TEST_FILE, os.path.join(output_dir_name, test_outfilename),
-                                        [dataTestY, prediction_tst], ['dataTestY', 'model_response'])
+                                        [dataTestY, prediction_tst], [dataY_header, model_response_header])
 
         print_log("Make prediction on validation data")
         print_log(f"prediction_val, acc_val = mutils.test_model(trainModels[{best_model_index}], \
@@ -950,18 +965,25 @@ def train(**kwargs):
         prediction_val, acc_val = mutils.test_model(trainModels[best_model_index], dataValidationX, dataValidationY)
         print_log(f"mutils.append_new_column_to_csv({cly.VALIDATION_FILE}, \
                   {os.path.join(output_dir_name, validation_outfilename)}, [dataValidationY, prediction_val], \
-                  ['dataValidationY', 'model_response'])")
+                  [{dataY_header}, {model_response_header}])")
         mutils.append_new_column_to_csv(cly.VALIDATION_FILE, os.path.join(output_dir_name, validation_outfilename),
-                                        [dataValidationY, prediction_val], ['dataValidationY', 'model_response'])
+                                        [dataValidationY, prediction_val], [dataY_header, model_response_header])
 
         # compute statistics
         stats_trn, stats_tst, stats_val = {}, {}, {}
+        print_log(f"np.shape(dataTrainY) == {np.shape(dataTrainY)}")
+        print_log(f"np.shape(prediction_trn) == {np.shape(prediction_trn)}")
         print_log("contingency_table_trn = stat.contingency_table(dataTrainY, prediction_trn)")
         contingency_table_trn = stat.contingency_table(dataTrainY, prediction_trn)
+        print_log(f"contingency_table_trn == {contingency_table_trn}")
         print_log("contingency_table_tst = stat.contingency_table(dataTestY, prediction_tst)")
         contingency_table_tst = stat.contingency_table(dataTestY, prediction_tst)
         print_log("contingency_table_val = stat.contingency_table(dataValidationY, prediction_val)")
+        print_log(f"contingency_table_tst == {contingency_table_tst}")
         contingency_table_val = stat.contingency_table(dataValidationY, prediction_val)
+        print_log(f"np.shape(contingency_table_trn) == {np.shape(contingency_table_trn)}")
+        print_log(f"contingency_table_val == {contingency_table_val}")
+
         for st in ino_tr['statistics']:
             if st['stat'] == "contingency_table":
                 stats_trn.update({"cont_table": contingency_table_trn})

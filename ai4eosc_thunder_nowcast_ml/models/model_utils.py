@@ -134,7 +134,9 @@ def make_dataset(csv_input_path, config_yaml):
                      and csv_file.columns[i][1] in ast.literal_eval(config_yaml['dataset'][0]['ORP_list'])]
         data_X = csv_file.iloc[:, col_ind_X].values.tolist()
         data_Y = csv_file.iloc[:, col_ind_Y].values.tolist()
-        return (data_X, data_Y)
+        print_log(f"csv_file.columns[col_ind_X] == {csv_file.columns[col_ind_X]}")
+        print_log(f"csv_file.columns[col_ind_Y] == {csv_file.columns[col_ind_Y]}")
+        return (data_X, data_Y, csv_file.columns[col_ind_X], csv_file.columns[col_ind_Y])
     except Exception as err:
         print_log(f"{currentFuncName()}: Unexpected {err=}, {type(err)=}")
 
@@ -142,7 +144,9 @@ def make_dataset(csv_input_path, config_yaml):
 def append_new_column_to_csv(input_path, output_path, columns, column_names):
     df = pd.read_csv(input_path, na_filter=False, header=[0, 1])
     for i in range(len(column_names)):
-        df[column_names[i]] = pd.DataFrame(columns[i])
+        df_tmp = pd.DataFrame(columns[i])
+        for j in range(len(column_names[i][0])):
+            df[(column_names[i][0][j], column_names[i][1][j])] = df_tmp.iloc[:, j]
 
     df.to_csv(output_path, index=False)
 
@@ -249,9 +253,7 @@ def train_model(dataX, dataY, parameters):
 def prediction_vector(model, dataX):
     try:
         print_log(f"running {currentFuncName()}")
-        prediction = model.predict(dataX)
-        print_log(f"{currentFuncName()}: prediction = np.argmax(prediction, axis=1)")
-        prediction = np.argmax(prediction, axis=1)
+        prediction = np.round(model.predict(dataX))
         print_log(f"{currentFuncName()}: return prediction")
         return prediction
     except Exception as err:
@@ -272,7 +274,9 @@ def test_model(model, dataX, dataY=[]):
         if dataY == []:
             return prediction
         else:
-            acc = len([1 for i in range(len(dataY)) if unlist(dataY[i]) == prediction[i]]) / len(dataY)
+            prediction_vec = np.reshape(prediction, (np.prod(np.shape(prediction)), 1))
+            dataY_vec = np.reshape(dataY, (np.prod(np.shape(dataY)), 1))
+            acc = len([1 for i in range(len(dataY_vec)) if unlist(dataY_vec[i]) == prediction_vec[i]]) / len(dataY_vec)
             return prediction, acc
     except Exception as err:
         print_log(f"{currentFuncName()}: Unexpected {err=}, {type(err)=}")
