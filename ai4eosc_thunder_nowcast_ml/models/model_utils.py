@@ -7,6 +7,7 @@ import numpy as np
 import pandas as pd
 import sys
 import ast
+import h5py
 from sklearn.model_selection import KFold
 from keras.utils import to_categorical
 from keras.models import Sequential
@@ -272,6 +273,8 @@ def test_model(model, dataX, dataY=[]):
         print_log(f"running {currentFuncName()}")
         prediction = prediction_vector(model, dataX)
         if dataY == []:
+            print_log(f"np.shape(prediciton) == {np.shape(prediction)}")
+            print_log(f"prediction == {prediction}")
             return prediction
         else:
             prediction_vec = np.reshape(prediction, (np.prod(np.shape(prediction)), 1))
@@ -282,21 +285,46 @@ def test_model(model, dataX, dataY=[]):
         print_log(f"{currentFuncName()}: Unexpected {err=}, {type(err)=}")
 
 
-def load_model(modelPath, parameters):
+def load_model(modelPath, parameters, returnHeader=False):
     try:
         print_log(f"running {currentFuncName()}")
         model = define_model(parameters)
         print_log(f"{currentFuncName()}: modelPath == {modelPath}")
         model.load_weights(modelPath, skip_mismatch=False, by_name=False, options=None)
-        return model
+        if returnHeader:
+            try:
+                print_log(f"h5f = h5py.File({modelPath}, 'r')")
+                h5f = h5py.File(modelPath, 'r')
+                print_log("header = h5f['header'][:]")
+                header = h5f['header'][:]
+                print_log("h5f.close()")
+                h5f.close()
+                print_log("header = header.astype(str)")
+                header = header.astype(str)
+                print_log("header = pd.MultiIndex.from_tuples(list(zip(*header)))")
+                header = pd.MultiIndex.from_tuples(list(zip(*header)))
+                print_log(f"header == {header}")
+                return model, header
+            except Exception as err:
+                print_log(f"{currentFuncName()}: Unexpected {err=}, {type(err)=}")
+                return model, []
+        else:
+            return model
     except Exception as err:
         print_log(f"{currentFuncName()}: Unexpected {err=}, {type(err)=}")
 
 
-def save_model(model, modelPath):
+def save_model(model, modelPath, header=None):
     try:
         print_log(f"running {currentFuncName()}")
         model.save_weights(modelPath)
+        if header is not None:
+            print_log(f"h5f = h5py.File({modelPath}, 'a')")
+            h5f = h5py.File(modelPath, 'a')
+            print_log("h5f.create_dataset('header', data=header)")
+            h5f.create_dataset('header', data=header)
+            print_log("h5f.close()")
+            h5f.close()
         return 1
     except Exception as err:
         print_log(f"{currentFuncName()}: Unexpected {err=}, {type(err)=}")

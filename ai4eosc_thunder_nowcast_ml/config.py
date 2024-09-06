@@ -125,14 +125,14 @@ class PredictArgsSchema(Schema):
         description="Choose MLflow user config file"
     )
 
-    cfg_file_pr = fields.Field(
-        required=False,
-        missing=None,
-        type="file",
-        data_key="cfg_file",
-        location="form",
-        description="New configuration file"
-    )
+    # cfg_file_pr = fields.Field(
+    #     required=False,
+    #     missing=None,
+    #     type="file",
+    #     data_key="cfg_file",
+    #     location="form",
+    #     description="New configuration file"
+    # )
 
     new_config_file_name = fields.String(
         required=False, missing=None, description="Set new config file name"

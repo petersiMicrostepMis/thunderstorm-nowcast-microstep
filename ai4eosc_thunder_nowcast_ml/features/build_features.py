@@ -482,9 +482,6 @@ def prepare_data_train(source_path, dest_path, dest_path_train_file, dest_path_t
 
         all_zeros2 = np.logical_and(np.random.choice(2, size=len(all_zeros), p=(0.1, 0.9)).astype(bool),
                                     all_zeros)
-        # print_log(f"np.shape(all_zeros2) == {np.shape(all_zeros2)}")
-        # print_log(f"np.sum(all_zeros) == {np.sum(all_zeros)}")
-        # print_log(f"np.sum(all_zeros2) == {np.sum(all_zeros2)}")
 
         for i in range(len(d1_files_out)):
             print_log("d1_files_out")
@@ -612,8 +609,9 @@ def prepare_data_predict(source_path, dest_path, dest_path_predict_file, config_
         print_log(f"ORPs == {ORPs}")
 
         make_raw_csv_data(source_path, dest_path,
-                          ast.literal_eval(config_yaml['all_data_models']),
-                          ast.literal_eval(config_yaml['all_data_sources']),
+                          ast.literal_eval(config_yaml['input_data_d1']) +
+                          ast.literal_eval(config_yaml['input_data_d2']),
+                          ast.literal_eval(config_yaml['input_data_sources']),
                           ast.literal_eval(config_yaml['use_columns']) + ORPs,
                           config_yaml['forecast_time'])
 
@@ -632,26 +630,24 @@ def prepare_data_predict(source_path, dest_path, dest_path_predict_file, config_
                 d2_headers.append(dm + "__" + ds)
                 d2_source_path_list.append(dest_path + "/" + dm + "__" + ds + ".csv")
 
-        m_source_path_list = list()
-        m_headers = list()
-        for ds in ast.literal_eval(config_yaml['input_data_sources']):
-            m_headers.append(dm + "__" + ds)
-            m_source_path_list.append(dest_path + "/" + dm + "__" + ds + ".csv")
+        # m_source_path_list = list()
+        # m_headers = list()
+        # for ds in ast.literal_eval(config_yaml['input_data_sources']):
+        #     m_headers.append(dm + "__" + ds)
+        #     m_source_path_list.append(dest_path + "/" + dm + "__" + ds + ".csv")
 
         print_log(f"{currentFuncName()}: load_csv_files({d1_source_path_list}, {config_yaml}, {d1_headers})")
         d1_files, d1_headers = load_csv_files(d1_source_path_list, config_yaml, d1_headers, nan_to_zero=True)
         print_log(f"{currentFuncName()}: load_csv_files({d2_source_path_list}, {config_yaml}, {d2_headers})")
         d2_files, d2_headers = load_csv_files(d2_source_path_list, config_yaml, d2_headers, nan_to_zero=True)
-        print_log(f"{currentFuncName()}: load_csv_files({m_source_path_list}, {config_yaml}, {m_headers})")
-        m_files, m_headers = load_csv_files(m_source_path_list, config_yaml, m_headers, nan_to_zero=True)
+        # print_log(f"{currentFuncName()}: load_csv_files({m_source_path_list}, {config_yaml}, {m_headers})")
+        # m_files, m_headers = load_csv_files(m_source_path_list, config_yaml, m_headers, nan_to_zero=True)
 
-        # merge_csv_dates
-        # d_files_out, m_files_out = merge_csv_files(d_files, [], config_yaml['time_tolerance'])
         # merge_csv_dates
         d1_files, d2_files, m_files = merge_csv_files(d1_files, d2_files, [], config_yaml['time_tolerance'])
         print_log(f"d1_files[0].columns == {d1_files[0].columns}")
         print_log(f"d2_files[0].columns == {d2_files[0].columns}")
-        print_log(f"m_files[0].columns == {m_files[0].columns}")
+        # print_log(f"m_files[0].columns == {m_files[0].columns}")
 
         d1_files_tmp, d2_files_tmp, m_files_tmp = list(), list(), list()
         print_log("d1 files, ORP selection")
@@ -728,22 +724,38 @@ def prepare_data_predict(source_path, dest_path, dest_path_predict_file, config_
         #                                       threshold, val1, val2)
 
         # indices for train, test and validation
+        print_log("1")
+        print_log(f"d1_files_out == {d1_files_out}")
+        print_log(f"d1_files_out[0] == {d1_files_out[0]}")
+        print_log(f"d1_files_out[0]['timestamp'] == {d1_files_out[0]['timestamp']}")
+        print_log(f"config_yaml['predict']['seasons'] == {config_yaml['predict']['seasons']}")
         predict_i = get_proper_dates_indices(d1_files_out[0]['timestamp'] / 1000, config_yaml['predict']['seasons'])
 
+        print_log("1.5")
         predict_d1 = [d1_files_out[i].iloc[predict_i].reset_index(drop=True) for i in range(len(d1_files_out))]
+        print_log("2")
         headers_d1 = [[d1_headers[i], ] * len(d1_files_out[i].columns) for i in range(len(d1_headers))]
+        print_log("3")
         predict_d2 = [d2_files_out[i].iloc[predict_i].reset_index(drop=True) for i in range(len(d2_files_out))]
+        print_log("4")
         headers_d2 = [[d2_headers[i], ] * len(d2_files_out[i].columns) for i in range(len(d2_headers))]
+        print_log("5")
         headers = list()
 
+        print_log("6")
         for i in range(len(headers_d1)):
             headers = headers + headers_d1[i]
+        print_log("7")
         for i in range(len(headers_d2)):
             headers = headers + headers_d2[i]
 
         # save split data
+        print_log("8")
         predict = pd.concat(predict_d1 + predict_d2, axis=1)
+        print_log("9")
         predict.columns = [headers, predict.columns]
+        print_log("10")
         predict.to_csv(dest_path_predict_file, index=False)
+        print_log("11")
     except Exception as err:
         print_log(f"{currentFuncName()}: Unexpected {err=}, {type(err)=}")

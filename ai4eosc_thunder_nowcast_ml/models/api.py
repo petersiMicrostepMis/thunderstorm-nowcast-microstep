@@ -380,6 +380,7 @@ def predict(**kwargs):
     """
 
     def _before_return():
+        print_log("predict: _before_return")
         # move log file
         print_log(f"shutil.move({cly.LOG_FILE_PATH}, {output_dir_name}/log_file.txt)")
         shutil.move(cly.LOG_FILE_PATH, output_dir_name + "/log_file.txt")
@@ -388,6 +389,7 @@ def predict(**kwargs):
         shutil.make_archive(output_filename, 'zip', source_dir)
 
     def _on_return(**kwargs):
+        print_log("predict: _on_return")
         date_suffix = ""
         if os.path.isdir(output_dir_name):
             date_suffix = "_" + datetime.datetime.now().strftime("_%Y%m%d_%H%M%S")
@@ -478,10 +480,10 @@ def predict(**kwargs):
 
         # load yaml config files
         dtm_pr = load_config_yaml_file(config_dtm_pr_path)
-        mlo_pr = load_config_yaml_file(config_mlo_pr_path)
+        # mlo_pr = load_config_yaml_file(config_mlo_pr_path)
         nnw_pr = load_config_yaml_file(config_nnw_pr_path)
         ino_pr = load_config_yaml_file(config_ino_pr_path)
-        usr_pr = load_config_yaml_file(config_usr_pr_path)
+        # usr_pr = load_config_yaml_file(config_usr_pr_path)
 
         # prepare output_name and deleted directories
         send_to = ""
@@ -546,10 +548,10 @@ def predict(**kwargs):
         print_log(f"shutil.copy({targz_data_path}, os.path.join({cly.RAW_DATA_DIR}, {targz_data_name}))")
         shutil.copy(targz_data_path, os.path.join(cly.RAW_DATA_DIR, targz_data_name))
 
-        if ino_pr["predict_outfilename"] == "":
+        if ino_pr["prediction_outfilename"] == "":
             prediction_outfilename = cly.PREDICTION_OUTFILENAME
         else:
-            prediction_outfilename = ino_pr["train_outfilename"]
+            prediction_outfilename = ino_pr["prediction_outfilename"]
 
         print_log(f"tar = tarfile.open(os.path.join({cly.RAW_DATA_DIR}, {targz_data_name}), mode='r:gz')")
         tar = tarfile.open(os.path.join(cly.RAW_DATA_DIR, targz_data_name), mode='r:gz')
@@ -574,114 +576,120 @@ def predict(**kwargs):
             print_log(f"prepare_data_predict({cly.RAW_DATA_DIR},{cly.WORKING_DATA_DIR},{cly.PREDICT_FILE},dtm_pr)")
             bf.prepare_data_predict(cly.RAW_DATA_DIR, cly.WORKING_DATA_DIR, cly.PREDICT_FILE, dtm_pr)
 
-        print_log(f"dataPredictX, dataPredictY = mutils.make_dataset({cly.PREDICT_FILE}, dtm_pr)")
-        dataPredictX, dataPredictY = mutils.make_dataset(cly.PREDICT_FILE, dtm_pr)
+        print_log(f"dataPredictX, dataPredictY, dprXcols, dprYcols = mutils.make_dataset({cly.PREDICT_FILE}, dtm_pr)")
+        dataPredictX, dataPredictY, dprXcols, dprYcols = mutils.make_dataset(cly.PREDICT_FILE, dtm_pr)
 
         # load model
         print_log("Load model")
-        modelLoad = mutils.load_model(os.path.join(output_dir_name, model_hdf5_name), nnw_pr)
-
-        print_log("Make prediction on test data")
-        prediction_pr, acc_pr = mutils.test_model(modelLoad, dataPredictX, dataPredictY)
-        print_log(f"mutils.append_new_column_to_csv({cly.TEST_FILE}, \
-                  {os.path.join(output_dir_name, prediction_outfilename)}, \
-                  [dataPredictY, prediction_tst], ['dataPredictY', 'model_response'])")
-        mutils.append_new_column_to_csv(cly.TEST_FILE, os.path.join(output_dir_name, prediction_outfilename),
-                                        [dataPredictY, prediction_pr], ['dataPredictY', 'model_response'])
-
-        # compute statistics
-        stats_pr = {}
-        print_log("contingency_table_trn = stat.contingency_table(dataPredictY, prediction_pr)")
-        contingency_table_pr = stat.contingency_table(dataPredictY, prediction_pr)
-        for st in ino_pr['statistics']:
-            if st['stat'] == "contingency_table":
-                stats_pr.update({"cont_table": contingency_table_pr})
-            elif st['stat'] == "F1":
-                stats_pr.update({"F1": stat.metrics_F1(contingency_table_pr)})
-            elif st['stat'] == "POD":
-                stats_pr.update({"POD": stat.metrics_POD(contingency_table_pr)})
-            elif st['stat'] == "FAR":
-                stats_pr.update({"FAR": stat.metrics_FAR(contingency_table_pr)})
-            elif st['stat'] == "ACC":
-                stats_pr.update({"ACC": stat.metrics_ACC(contingency_table_pr)})
-            elif st['stat'] == "CSI":
-                stats_pr.update({"CSI": stat.metrics_CSI(contingency_table_pr)})
-            elif st['stat'] == "HSS":
-                stats_pr.update({"HSS": stat.metrics_HSS(contingency_table_pr)})
-            elif st['stat'] == "MSI":
-                stats_pr.update({"MSI": stat.metrics_MSI(contingency_table_pr)})
-
-        # log statistics
-        print_log(f"stats_pr == {stats_pr}")
-
-        # save statistics to mlflow
-        MLFLOW_TRACKING_USERNAME = usr_pr["user_egi_checkin"]
-        MLFLOW_TRACKING_PASSWORD = usr_pr["passwd"]
-        MLFLOW_REMOTE_SERVER = usr_pr["mlflow_remote_server"]
-
-        os.environ["MLFLOW_TRACKING_USERNAME"] = MLFLOW_TRACKING_USERNAME
-        os.environ["MLFLOW_TRACKING_PASSWORD"] = MLFLOW_TRACKING_PASSWORD
-        os.environ["MLFLOW_REMOTE_SERVER"] = MLFLOW_REMOTE_SERVER
-
-        MLFLOW_EXPERIMENT_NAME = mlo_pr["experiment_name"]
-        mlflow.set_tracking_uri(MLFLOW_REMOTE_SERVER)
-        mlflow.set_experiment(MLFLOW_EXPERIMENT_NAME)
-
-        # copy data to output
-        print_log("Copy data to output")
-        if os.path.exists(cly.PREDICT_FILE):
-            print_log(f"shutil.copy({cly.PREDICT_FILE}, {output_dir_name})")
-            shutil.copy(cly.PREDICT_FILE, output_dir_name)
+        modelLoad, model_response_header = mutils.load_model(os.path.join(output_dir_name, model_hdf5_name),
+                                                             nnw_pr, True)
+        print_log(f"model_response_header == {model_response_header}")
 
         # make prediction
-        print_log("Make prediction")
-        prediction, acc = mutils.test_model(modelLoad, dataPredictX)
+        print_log("Make prediction on test data")
+        prediction_pr = mutils.test_model(modelLoad, dataPredictX, [])
+        # print_log(f"np.shape(prediction_pr) == {np.shape(prediction_pr)}")
+        # print_log(f"prediction_pr == {prediction_pr}")
+        # print_log(f"model_response_header == {model_response_header}")
+        print_log(f"mutils.append_new_column_to_csv({cly.PREDICT_FILE}, \
+                 {os.path.join(output_dir_name, prediction_outfilename)}, \
+                 [prediction_pr, ], [{model_response_header}, ])")
+        mutils.append_new_column_to_csv(cly.PREDICT_FILE, os.path.join(output_dir_name, prediction_outfilename),
+                                        [prediction_pr, ], [model_response_header, ])
 
-        with mlflow.start_run():
-            print_log(f"mlflow.log_param('Input data models', {dtm_pr['input_data_d1'] + dtm_pr['input_data_d2']})")
-            mlflow.log_param("Input data models", dtm_pr["input_data_d1"] + dtm_pr["input_data_d2"])
-            print_log(f"mlflow.log_param('Input data sources', {dtm_pr['input_data_sources']})")
-            mlflow.log_param("Input data sources", dtm_pr["input_data_sources"])
-            print_log(f"mlflow.log_param('Measurements', {dtm_pr['measurements']})")
-            mlflow.log_param("Measurements", dtm_pr["measurements"])
-            print_log(f"mlflow.log_param('Time tolerance', {dtm_pr['time_tolerance']})")
-            mlflow.log_param("Time tolerance", dtm_pr["time_tolerance"])
-            print_log(f"mlflow.log_param('Forecast time', {dtm_pr['forecast_time']})")
-            mlflow.log_param("Forecast time", dtm_pr["forecast_time"])
-            print_log(f"mlflow.log_param('Threshold value', {dtm_pr['threshold_value']})")
-            mlflow.log_param("Threshold value", dtm_pr["threshold_value"])
-            print_log(f"mlflow.log_param('ORP list', {dtm_pr['dataset'][0]['ORP_list']})")
-            mlflow.log_param("ORP list", dtm_pr["dataset"][0]["ORP_list"])
-            print_log(f"mlflow.log_param('Train dataset', {dtm_pr['train']['seasons']})")
-            mlflow.log_param("Train dataset", dtm_pr["train"]["seasons"])
-            print_log(f"mlflow.log_param('Test dataset', {dtm_pr['test']['seasons']})")
-            mlflow.log_param("Test dataset", dtm_pr["test"]["seasons"])
-            print_log(f"mlflow.log_param('Validation dataset', {dtm_pr['validate']['seasons']})")
-            mlflow.log_param("Validation dataset", dtm_pr["validate"]["seasons"])
-            for val1 in nnw_pr["model_parameters"]:
-                if isinstance(nnw_pr["model_parameters"][val1], list):
-                    i = 0
-                    for val2 in nnw_pr["model_parameters"][val1]:
-                        prfx = "_" + str(i + 1)
-                        print_log(f"mlflow.log_param({val1}{prfx}, {val2})")
-                        mlflow.log_param(val1 + prfx, val2)
-                        i = i + 1
-                else:
-                    print_log(f"mlflow.log_params({val1}'_' + str(key): val for key, val in \
-                            {nnw_pr['model_parameters'][val1].items()})")
-                    mlflow.log_params({val1 + "_" + str(key): val for key, val in
-                                       nnw_pr["model_parameters"][val1].items()})
-            print_log(f"mlflow.log_params({nnw_pr['train_model_settings']})")
-            mlflow.log_params(nnw_pr['train_model_settings'])
-            for key in stats_pr:
-                tmp = stat.unlist_all(stats_pr[key])
-                if isinstance(tmp, (int, float, str)):
-                    print_log(f"mlflow.log_metric(prediction:{key}, stats_pr[{key}])")
-                    mlflow.log_metric("prediction:" + key, stats_pr[key])
+        # # compute statistics
+        # stats_pr = {}
+        # print_log("contingency_table_trn = stat.contingency_table(dataPredictY, prediction_pr)")
+        # contingency_table_pr = stat.contingency_table(dataPredictY, prediction_pr)
+        # for st in ino_pr['statistics']:
+        #     if st['stat'] == "contingency_table":
+        #         stats_pr.update({"cont_table": contingency_table_pr})
+        #     elif st['stat'] == "F1":
+        #         stats_pr.update({"F1": stat.metrics_F1(contingency_table_pr)})
+        #     elif st['stat'] == "POD":
+        #         stats_pr.update({"POD": stat.metrics_POD(contingency_table_pr)})
+        #     elif st['stat'] == "FAR":
+        #         stats_pr.update({"FAR": stat.metrics_FAR(contingency_table_pr)})
+        #     elif st['stat'] == "ACC":
+        #         stats_pr.update({"ACC": stat.metrics_ACC(contingency_table_pr)})
+        #     elif st['stat'] == "CSI":
+        #         stats_pr.update({"CSI": stat.metrics_CSI(contingency_table_pr)})
+        #     elif st['stat'] == "HSS":
+        #         stats_pr.update({"HSS": stat.metrics_HSS(contingency_table_pr)})
+        #     elif st['stat'] == "MSI":
+        #         stats_pr.update({"MSI": stat.metrics_MSI(contingency_table_pr)})
+
+        # # log statistics
+        # print_log(f"stats_pr == {stats_pr}")
+
+        # # save statistics to mlflow
+        # MLFLOW_TRACKING_USERNAME = usr_pr["user_egi_checkin"]
+        # MLFLOW_TRACKING_PASSWORD = usr_pr["passwd"]
+        # MLFLOW_REMOTE_SERVER = usr_pr["mlflow_remote_server"]
+
+        # os.environ["MLFLOW_TRACKING_USERNAME"] = MLFLOW_TRACKING_USERNAME
+        # os.environ["MLFLOW_TRACKING_PASSWORD"] = MLFLOW_TRACKING_PASSWORD
+        # os.environ["MLFLOW_REMOTE_SERVER"] = MLFLOW_REMOTE_SERVER
+
+        # MLFLOW_EXPERIMENT_NAME = mlo_pr["experiment_name"]
+        # mlflow.set_tracking_uri(MLFLOW_REMOTE_SERVER)
+        # mlflow.set_experiment(MLFLOW_EXPERIMENT_NAME)
+
+        # # copy data to output
+        # print_log("Copy data to output")
+        # if os.path.exists(cly.PREDICT_FILE):
+        #     print_log(f"shutil.copy({cly.PREDICT_FILE}, {output_dir_name})")
+        #     shutil.copy(cly.PREDICT_FILE, output_dir_name)
+
+        # # make prediction
+        # print_log("Make prediction")
+        # prediction, acc = mutils.test_model(modelLoad, dataPredictX)
+
+        # with mlflow.start_run():
+        #     print_log(f"mlflow.log_param('Input data models', {dtm_pr['input_data_d1'] + dtm_pr['input_data_d2']})")
+        #     mlflow.log_param("Input data models", dtm_pr["input_data_d1"] + dtm_pr["input_data_d2"])
+        #     print_log(f"mlflow.log_param('Input data sources', {dtm_pr['input_data_sources']})")
+        #     mlflow.log_param("Input data sources", dtm_pr["input_data_sources"])
+        #     print_log(f"mlflow.log_param('Measurements', {dtm_pr['measurements']})")
+        #     mlflow.log_param("Measurements", dtm_pr["measurements"])
+        #     print_log(f"mlflow.log_param('Time tolerance', {dtm_pr['time_tolerance']})")
+        #     mlflow.log_param("Time tolerance", dtm_pr["time_tolerance"])
+        #     print_log(f"mlflow.log_param('Forecast time', {dtm_pr['forecast_time']})")
+        #     mlflow.log_param("Forecast time", dtm_pr["forecast_time"])
+        #     print_log(f"mlflow.log_param('Threshold value', {dtm_pr['threshold_value']})")
+        #     mlflow.log_param("Threshold value", dtm_pr["threshold_value"])
+        #     print_log(f"mlflow.log_param('ORP list', {dtm_pr['dataset'][0]['ORP_list']})")
+        #     mlflow.log_param("ORP list", dtm_pr["dataset"][0]["ORP_list"])
+        #     print_log(f"mlflow.log_param('Train dataset', {dtm_pr['train']['seasons']})")
+        #     mlflow.log_param("Train dataset", dtm_pr["train"]["seasons"])
+        #     print_log(f"mlflow.log_param('Test dataset', {dtm_pr['test']['seasons']})")
+        #     mlflow.log_param("Test dataset", dtm_pr["test"]["seasons"])
+        #     print_log(f"mlflow.log_param('Validation dataset', {dtm_pr['validate']['seasons']})")
+        #     mlflow.log_param("Validation dataset", dtm_pr["validate"]["seasons"])
+        #     for val1 in nnw_pr["model_parameters"]:
+        #         if isinstance(nnw_pr["model_parameters"][val1], list):
+        #             i = 0
+        #             for val2 in nnw_pr["model_parameters"][val1]:
+        #                 prfx = "_" + str(i + 1)
+        #                 print_log(f"mlflow.log_param({val1}{prfx}, {val2})")
+        #                 mlflow.log_param(val1 + prfx, val2)
+        #                 i = i + 1
+        #         else:
+        #             print_log(f"mlflow.log_params({val1}'_' + str(key): val for key, val in \
+        #                     {nnw_pr['model_parameters'][val1].items()})")
+        #             mlflow.log_params({val1 + "_" + str(key): val for key, val in
+        #                                nnw_pr["model_parameters"][val1].items()})
+        #     print_log(f"mlflow.log_params({nnw_pr['train_model_settings']})")
+        #     mlflow.log_params(nnw_pr['train_model_settings'])
+        #     for key in stats_pr:
+        #         tmp = stat.unlist_all(stats_pr[key])
+        #         if isinstance(tmp, (int, float, str)):
+        #             print_log(f"mlflow.log_metric(prediction:{key}, stats_pr[{key}])")
+        #             mlflow.log_metric("prediction:" + key, stats_pr[key])
 
         # return output
         _before_return()
-        return _on_return(kwargs)
+        return _on_return(**kwargs)
 
     except Exception as err:
         print_log(f"{currentFuncName()}: Unexpected {err=}, {type(err)=}")
@@ -894,7 +902,7 @@ def train(**kwargs):
         print_log(f"dataTestX, dataTestY, dteXcols, dteYcols = mutils.make_dataset({cly.TEST_FILE}, dtm_tr)")
         dataTestX, dataTestY, dteXcols, dteYcols = mutils.make_dataset(cly.TEST_FILE, dtm_tr)
 
-        print_log("dataValidationX, dataValidationY, dvalXcols, dvalYcols =")
+        print_log("dataValidationX, dataValidationY, dvalXcols, dvalYcols = ")
         print_log(f"mutils.make_dataset({cly.VALIDATION_FILE}, dtm_tr)")
         dataValidationX, dataValidationY, dvalXcols, dvalYcols = mutils.make_dataset(cly.VALIDATION_FILE, dtm_tr)
 
@@ -924,11 +932,6 @@ def train(**kwargs):
             trainModels.append(modelLoad)
             best_model_index = 0
 
-        # model saving
-        print_log(f"mutils.save_model(trainModels[{best_model_index}], os.path.join({output_dir_name}, \
-                  {model_hdf5_name}))")
-        mutils.save_model(trainModels[best_model_index], os.path.join(output_dir_name, model_hdf5_name))
-
         # write outputs train, test, validation
         dataY_header = list(dtrYcols)
         for i in range(len(dataY_header)):
@@ -940,6 +943,13 @@ def train(**kwargs):
         for i in range(len(model_response_header)):
             model_response_header[i] = (model_response_header[i][0].replace("measurements", "modelResponse"),
                                         model_response_header[i][1])
+
+        # model saving
+        print_log(f"mutils.save_model(trainModels[{best_model_index}], os.path.join({output_dir_name}, \
+                  {model_hdf5_name}), {model_response_header})")
+        mutils.save_model(trainModels[best_model_index], os.path.join(output_dir_name, model_hdf5_name),
+                          model_response_header)
+
         model_response_header = pd.MultiIndex.from_tuples(list(zip(*model_response_header)))
         print_log(f"model_response_header == {model_response_header}")
 
@@ -1132,6 +1142,7 @@ def main():
         return results
     elif args.method == 'predict':
         # [!] you may need to take special care in the case of args.files [!]
+        print("PREDICT:")
         results = predict(**vars(args))
         print(json.dumps(results))
         return results

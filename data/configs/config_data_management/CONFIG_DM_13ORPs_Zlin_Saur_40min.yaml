@@ -3,15 +3,17 @@ input_data_d2: ('titan',)
 input_data_sources: ('cappi2000', 'vil')
 measurements: 'measurements'
 time_tolerance: 60000  # in milliseconds
-forecast_time: 5  # in minutes
+forecast_time: 40  # in minutes
 threshold_value: '(17, 1, 0)'  # first - threshold value, second - more or equal than threshold, third - less than threshold
 use_columns: '("timestamp", "forecast")'
-train:
+#train:
+test:
     seasons:
       - years: '(2016, 2017, 2018)'
         months: '()'
         days: '()'
-test:
+#test:
+train:
     seasons:
       - years: '(2019, 2020)'
         months: '()'
@@ -19,11 +21,6 @@ test:
 validate:
     seasons:
       - years: '(2019, 2020)'
-        months: '()'
-        days: '()'
-predict:
-    seasons:
-      - years: '(2016, 2017, 2018)'
         months: '()'
         days: '()'
 

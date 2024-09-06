@@ -46,6 +46,10 @@ def unlist_all(x, max_iter=1000):
 
 def contingency_table(measure, prediction, levels=[0, 1]):
     print_log(f"running {currentFuncName()}")
+    print_log(f"measure == {measure}")
+    print_log(f"np.shape(measure) == {np.shape(measure)}")
+    print_log(f"np.prod(np.shape(measure) == {np.prod(np.shape(measure))}")
+    print_log(f"(np.prod(np.shape(measure)), 1) == {(np.prod(np.shape(measure)), 1)}")
     measure = np.concatenate(np.reshape(measure, (np.prod(np.shape(measure)), 1)))
     prediction = np.concatenate(np.reshape(prediction, (np.prod(np.shape(prediction)), 1)))
     # length check
