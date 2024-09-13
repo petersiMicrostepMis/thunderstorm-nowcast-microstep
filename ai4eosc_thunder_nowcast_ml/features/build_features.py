@@ -338,21 +338,21 @@ def prepare_data_train(source_path, dest_path, dest_path_train_file, dest_path_t
     try:
         print_log(f"running {currentFuncName()}")
         # csv_data_to_one_file
-        ORPs = tuple()
+        AREAs = tuple()
         for i in range(len(config_yaml['dataset'])):
-            ORPs = ORPs + ast.literal_eval(config_yaml['dataset'][i]['ORP_list'])
-        print_log(f"ORPs == {ORPs}")
+            AREAs = AREAs + ast.literal_eval(config_yaml['dataset'][i]['AREA_list'])
+        print_log(f"AREAs == {AREAs}")
 
         make_raw_csv_data(source_path, dest_path,
                           ast.literal_eval(config_yaml['input_data_d1']) +
                           ast.literal_eval(config_yaml['input_data_d2']),
                           ast.literal_eval(config_yaml['input_data_sources']),
-                          ast.literal_eval(config_yaml['use_columns']) + ORPs,
+                          ast.literal_eval(config_yaml['use_columns']) + AREAs,
                           config_yaml['forecast_time'])
         make_raw_csv_data(source_path, dest_path,
                           config_yaml['measurements'],
                           ast.literal_eval(config_yaml['input_data_sources']),
-                          ast.literal_eval(config_yaml['use_columns']) + ORPs)
+                          ast.literal_eval(config_yaml['use_columns']) + AREAs)
 
         # load_csv_files
         d1_source_path_list = list()
@@ -386,13 +386,13 @@ def prepare_data_train(source_path, dest_path, dest_path_train_file, dest_path_t
         print_log(f"m_files[0].columns == {m_files[0].columns}")
 
         d1_files_tmp, d2_files_tmp, m_files_tmp = list(), list(), list()
-        print_log("d1 files, ORP selection")
+        print_log("d1 files, AREA selection")
         for i in range(len(d1_files)):
             print_log(f"i == {i}")
             for j in range(len(config_yaml['dataset'])):
                 print_log(f"j == {j}")
                 use_columns = list(ast.literal_eval(config_yaml['use_columns']) +
-                                   ast.literal_eval(config_yaml['dataset'][j]['ORP_list']))
+                                   ast.literal_eval(config_yaml['dataset'][j]['AREA_list']))
                 print_log(f"use_columns == {use_columns}")
                 if j == 0:
                     print_log(f"d1_files_tmp.append({d1_files[i][use_columns]})")
@@ -407,13 +407,13 @@ def prepare_data_train(source_path, dest_path, dest_path_train_file, dest_path_t
                     print_log(f"d1_files_tmp[{i}] == {d1_files_tmp[i]}")
                 print_log("")
 
-        print_log("d2 files, ORP selection")
+        print_log("d2 files, AREA selection")
         for i in range(len(d2_files)):
             print_log(f"i == {i}")
             for j in range(len(config_yaml['dataset'])):
                 print_log(f"j == {j}")
                 use_columns = list(ast.literal_eval(config_yaml['use_columns']) +
-                                   ast.literal_eval(config_yaml['dataset'][j]['ORP_list']))
+                                   ast.literal_eval(config_yaml['dataset'][j]['AREA_list']))
                 print_log(f"use_columns == {use_columns}")
                 if j == 0:
                     print_log(f"d2_files_tmp.append({d2_files[i][use_columns]})")
@@ -428,13 +428,13 @@ def prepare_data_train(source_path, dest_path, dest_path_train_file, dest_path_t
                     print_log(f"d2_files_tmp[{i}] == {d2_files_tmp[i]}")
                 print_log("")
 
-        print_log("m files, ORP selection")
+        print_log("m files, AREA selection")
         for i in range(len(m_files)):
             print_log(f"i == {i}")
             for j in range(len(config_yaml['dataset'])):
                 print_log(f"j == {j}")
                 use_columns = list(ast.literal_eval(config_yaml['use_columns']) +
-                                   ast.literal_eval(config_yaml['dataset'][j]['ORP_list']))
+                                   ast.literal_eval(config_yaml['dataset'][j]['AREA_list']))
                 use_columns = [x for x in use_columns if x in m_files[i].columns]
                 if j == 0:
                     print_log(f"m_files_tmp.append({m_files[i][use_columns]})")
@@ -454,11 +454,11 @@ def prepare_data_train(source_path, dest_path, dest_path_train_file, dest_path_t
         # threshold, val1, val2 = ast.literal_eval(config_yaml['threshold_value'])
         threshold, val1 = ast.literal_eval(config_yaml['threshold_value'])
         val2 = 0
-        d1_files_out = values_in_df_to_classes(d1_files, ast.literal_eval(config_yaml['dataset'][0]['ORP_list']),
+        d1_files_out = values_in_df_to_classes(d1_files, ast.literal_eval(config_yaml['dataset'][0]['AREA_list']),
                                                threshold, val1, val2)
-        d2_files_out = values_in_df_to_classes(d2_files, ast.literal_eval(config_yaml['dataset'][0]['ORP_list']),
+        d2_files_out = values_in_df_to_classes(d2_files, ast.literal_eval(config_yaml['dataset'][0]['AREA_list']),
                                                threshold, val1, val2)
-        m_files_out = values_in_df_to_classes(m_files, ast.literal_eval(config_yaml['dataset'][0]['ORP_list']),
+        m_files_out = values_in_df_to_classes(m_files, ast.literal_eval(config_yaml['dataset'][0]['AREA_list']),
                                               threshold, val1, val2)
 
         # reset indices
@@ -558,13 +558,13 @@ def prepare_data_test(source_path, dest_path, dest_path_test_file, config_yaml):
                               ast.literal_eval(config_yaml['all_data_models']),
                               ast.literal_eval(config_yaml['all_data_sources']),
                               ast.literal_eval(config_yaml['use_columns']) +
-                              ast.literal_eval(config_yaml['dataset'][i]['ORP_list']),
+                              ast.literal_eval(config_yaml['dataset'][i]['AREA_list']),
                               config_yaml['forecast_time'])
             make_raw_csv_data(source_path, dest_path,
                               config_yaml['measurements'],
                               ast.literal_eval(config_yaml['all_data_sources']),
                               ast.literal_eval(config_yaml['use_columns']) +
-                              ast.literal_eval(config_yaml['dataset'][i]['ORP_list']))
+                              ast.literal_eval(config_yaml['dataset'][i]['AREA_list']))
 
         # load_csv_files
         d_source_path_list = list()
@@ -587,8 +587,8 @@ def prepare_data_test(source_path, dest_path, dest_path_test_file, config_yaml):
         # threshold, val1, val2 = ast.literal_eval(config_yaml['threshold_value'])
         threshold, val1 = ast.literal_eval(config_yaml['threshold_value'])
         val2 = 0
-        d_files = values_in_df_to_classes(d_files, ast.literal_eval(config_yaml['ORP_list']), threshold, val1, val2)
-        m_files = values_in_df_to_classes(m_files, ast.literal_eval(config_yaml['ORP_list']), threshold, val1, val2)
+        d_files = values_in_df_to_classes(d_files, ast.literal_eval(config_yaml['AREA_list']), threshold, val1, val2)
+        m_files = values_in_df_to_classes(m_files, ast.literal_eval(config_yaml['AREA_list']), threshold, val1, val2)
 
         # merge_csv_dates
         d_files_out, m_files_out = merge_csv_files(d_files, m_files, config_yaml['time_tolerance'])
@@ -618,16 +618,16 @@ def prepare_data_predict(source_path, dest_path, dest_path_predict_file, config_
     try:
         print_log(f"running {currentFuncName()}")
         # csv_data_to_one_file
-        ORPs = tuple()
+        AREAs = tuple()
         for i in range(len(config_yaml['dataset'])):
-            ORPs = ORPs + ast.literal_eval(config_yaml['dataset'][i]['ORP_list'])
-        print_log(f"ORPs == {ORPs}")
+            AREAs = AREAs + ast.literal_eval(config_yaml['dataset'][i]['AREA_list'])
+        print_log(f"AREAs == {AREAs}")
 
         make_raw_csv_data(source_path, dest_path,
                           ast.literal_eval(config_yaml['input_data_d1']) +
                           ast.literal_eval(config_yaml['input_data_d2']),
                           ast.literal_eval(config_yaml['input_data_sources']),
-                          ast.literal_eval(config_yaml['use_columns']) + ORPs,
+                          ast.literal_eval(config_yaml['use_columns']) + AREAs,
                           config_yaml['forecast_time'])
 
         # load_csv_files
@@ -665,13 +665,13 @@ def prepare_data_predict(source_path, dest_path, dest_path_predict_file, config_
         # print_log(f"m_files[0].columns == {m_files[0].columns}")
 
         d1_files_tmp, d2_files_tmp, m_files_tmp = list(), list(), list()
-        print_log("d1 files, ORP selection")
+        print_log("d1 files, AREA selection")
         for i in range(len(d1_files)):
             print_log(f"i == {i}")
             for j in range(len(config_yaml['dataset'])):
                 print_log(f"j == {j}")
                 use_columns = list(ast.literal_eval(config_yaml['use_columns']) +
-                                   ast.literal_eval(config_yaml['dataset'][j]['ORP_list']))
+                                   ast.literal_eval(config_yaml['dataset'][j]['AREA_list']))
                 print_log(f"use_columns == {use_columns}")
                 if j == 0:
                     print_log(f"d1_files_tmp.append({d1_files[i][use_columns]})")
@@ -686,13 +686,13 @@ def prepare_data_predict(source_path, dest_path, dest_path_predict_file, config_
                     print_log(f"d1_files_tmp[{i}] == {d1_files_tmp[i]}")
                 print_log("")
 
-        print_log("d2 files, ORP selection")
+        print_log("d2 files, AREA selection")
         for i in range(len(d2_files)):
             print_log(f"i == {i}")
             for j in range(len(config_yaml['dataset'])):
                 print_log(f"j == {j}")
                 use_columns = list(ast.literal_eval(config_yaml['use_columns']) +
-                                   ast.literal_eval(config_yaml['dataset'][j]['ORP_list']))
+                                   ast.literal_eval(config_yaml['dataset'][j]['AREA_list']))
                 print_log(f"use_columns == {use_columns}")
                 if j == 0:
                     print_log(f"d2_files_tmp.append({d2_files[i][use_columns]})")
@@ -707,13 +707,13 @@ def prepare_data_predict(source_path, dest_path, dest_path_predict_file, config_
                     print_log(f"d2_files_tmp[{i}] == {d2_files_tmp[i]}")
                 print_log("")
 
-        print_log("m files, ORP selection")
+        print_log("m files, AREA selection")
         for i in range(len(m_files)):
             print_log(f"i == {i}")
             for j in range(len(config_yaml['dataset'])):
                 print_log(f"j == {j}")
                 use_columns = list(ast.literal_eval(config_yaml['use_columns']) +
-                                   ast.literal_eval(config_yaml['dataset'][j]['ORP_list']))
+                                   ast.literal_eval(config_yaml['dataset'][j]['AREA_list']))
                 use_columns = [x for x in use_columns if x in m_files[i].columns]
                 if j == 0:
                     print_log(f"m_files_tmp.append({m_files[i][use_columns]})")
@@ -733,11 +733,11 @@ def prepare_data_predict(source_path, dest_path, dest_path_predict_file, config_
         # threshold, val1, val2 = ast.literal_eval(config_yaml['threshold_value'])
         threshold, val1 = ast.literal_eval(config_yaml['threshold_value'])
         val2 = 0
-        d1_files_out = values_in_df_to_classes(d1_files, ast.literal_eval(config_yaml['dataset'][0]['ORP_list']),
+        d1_files_out = values_in_df_to_classes(d1_files, ast.literal_eval(config_yaml['dataset'][0]['AREA_list']),
                                                threshold, val1, val2)
-        d2_files_out = values_in_df_to_classes(d2_files, ast.literal_eval(config_yaml['dataset'][0]['ORP_list']),
+        d2_files_out = values_in_df_to_classes(d2_files, ast.literal_eval(config_yaml['dataset'][0]['AREA_list']),
                                                threshold, val1, val2)
-        # m_files_out = values_in_df_to_classes(m_files, ast.literal_eval(config_yaml['dataset'][0]['ORP_list']),
+        # m_files_out = values_in_df_to_classes(m_files, ast.literal_eval(config_yaml['dataset'][0]['AREA_list']),
         #                                       threshold, val1, val2)
 
         # indices for train, test and validation

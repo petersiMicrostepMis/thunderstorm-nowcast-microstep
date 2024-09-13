@@ -30,4 +30,4 @@ predict:
         days: '()'
 
 dataset:
-  - ORP_list: '("ORP1","ORP2","ORP3","ORP4","ORP5","ORP6","ORP7","ORP8","ORP9","ORP10","ORP11","ORP12","ORP13")'
+  - AREA_list: '("AREA1","AREA2","AREA3","AREA4","AREA5","AREA6","AREA7","AREA8","AREA9","AREA10","AREA11","AREA12","AREA13")'

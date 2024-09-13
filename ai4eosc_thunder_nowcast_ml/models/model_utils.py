@@ -129,10 +129,10 @@ def make_dataset(csv_input_path, config_yaml):
         col_ind_X = [i for i in range(len(csv_file.columns))
                      if csv_file.columns[i][0].split("__")[0] in ast.literal_eval(config_yaml['input_data_d1']) +
                      ast.literal_eval(config_yaml['input_data_d2']) and csv_file.columns[i][1] in
-                     ast.literal_eval(config_yaml['dataset'][0]['ORP_list'])]
+                     ast.literal_eval(config_yaml['dataset'][0]['AREA_list'])]
         col_ind_Y = [i for i in range(len(csv_file.columns))
                      if csv_file.columns[i][0].split("__")[0] == config_yaml['measurements']
-                     and csv_file.columns[i][1] in ast.literal_eval(config_yaml['dataset'][0]['ORP_list'])]
+                     and csv_file.columns[i][1] in ast.literal_eval(config_yaml['dataset'][0]['AREA_list'])]
         data_X = csv_file.iloc[:, col_ind_X].values.tolist()
         data_Y = csv_file.iloc[:, col_ind_Y].values.tolist()
         print_log(f"csv_file.columns[col_ind_X] == {csv_file.columns[col_ind_X]}")

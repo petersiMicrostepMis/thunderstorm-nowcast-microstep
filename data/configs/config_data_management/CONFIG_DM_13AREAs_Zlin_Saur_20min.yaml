@@ -3,17 +3,15 @@ input_data_d2: ('titan',)
 input_data_sources: ('cappi2000', 'vil')
 measurements: 'measurements'
 time_tolerance: 60000  # in milliseconds
-forecast_time: 40  # in minutes
+forecast_time: 20  # in minutes
 threshold_value: '(17, 1, 0)'  # first - threshold value, second - more or equal than threshold, third - less than threshold
 use_columns: '("timestamp", "forecast")'
-#train:
-test:
+train:
     seasons:
       - years: '(2016, 2017, 2018)'
         months: '()'
         days: '()'
-#test:
-train:
+test:
     seasons:
       - years: '(2019, 2020)'
         months: '()'
@@ -25,4 +23,4 @@ validate:
         days: '()'
 
 dataset:
-  - ORP_list: '("ORP1","ORP2","ORP3","ORP4","ORP5","ORP6","ORP7","ORP8","ORP9","ORP10","ORP11","ORP12","ORP13")'
+  - AREA_list: '("AREA1","AREA2","AREA3","AREA4","AREA5","AREA6","AREA7","AREA8","AREA9","AREA10","AREA11","AREA12","AREA13")'
