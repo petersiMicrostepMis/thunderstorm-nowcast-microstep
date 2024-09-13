@@ -152,7 +152,7 @@ def append_new_column_to_csv(input_path, output_path, columns, column_names):
     df.to_csv(output_path, index=False)
 
 
-def define_model(parameters):  # dotiahnut hodnoty z configu
+def define_model(parameters):
     try:
         print_log(f"running {currentFuncName()}")
         model = Sequential()
@@ -223,16 +223,34 @@ def train_model(dataX, dataY, parameters):
         n_folds = parameters["train_model_settings"]["n_folds"]
         epochs = parameters["train_model_settings"]["epochs"]
         batch_size = parameters["train_model_settings"]["batch_size"]
+        output_neurons = parameters["train_model_settings"]["output_neurons"]
+        num_classes = parameters["train_model_settings"]["num_classes"]
         scores, histories, models = list(), list(), list()
 
         kfold = KFold(n_folds, shuffle=True, random_state=1)  # prepare cross validation
+        model = define_model(parameters)  # define model
         for train_ix, test_ix in kfold.split(dataX):  # enumerate splits
-            model = define_model(parameters)  # define model
-            trainX = [dataX[train_ix[i]] for i in range(len(train_ix))]
-            trainY = [dataY[train_ix[i]] for i in range(len(train_ix))]
-            testX = [dataX[test_ix[i]] for i in range(len(test_ix))]
-            testY = [dataY[test_ix[i]] for i in range(len(test_ix))]
+            trainX = [to_categorical(dataX[train_ix[i]], num_classes=num_classes) for i in range(len(train_ix))]
+            trainX = np.array(trainX)
+            trainY = [to_categorical(dataY[train_ix[i]], num_classes=num_classes) for i in range(len(train_ix))]
+            trainY = np.array(trainY)
+            testX = [to_categorical(dataX[test_ix[i]], num_classes=num_classes) for i in range(len(test_ix))]
+            testX = np.array(testX)
+            testY = [to_categorical(dataY[test_ix[i]], num_classes=num_classes) for i in range(len(test_ix))]
+            testY = np.array(testY)           
 
+            tmpY = np.empty((len(trainY), output_neurons*num_classes))
+            for i in range(len(trainY)):
+                tmpY[i] = np.reshape(trainY[i], (output_neurons*num_classes,))
+            trainY = tmpY
+
+            tmpY = np.empty((len(testY), output_neurons*num_classes))
+            for i in range(len(testY)):
+                tmpY[i] = np.reshape(testY[i], (output_neurons*num_classes,))
+            testY = tmpY
+
+            print_log(f"np.shape(trainX) == {np.shape(trainX)}")
+            print_log(f"np.shape(trainY) == {np.shape(trainY)}")
             history = model.fit(
                 trainX,
                 trainY,
@@ -251,10 +269,15 @@ def train_model(dataX, dataY, parameters):
         print_log(f"{currentFuncName()}: Unexpected {err=}, {type(err)=}")
 
 
-def prediction_vector(model, dataX):
+def prediction_vector(model, dataX, output_neurons, num_classes):
     try:
         print_log(f"running {currentFuncName()}")
-        prediction = np.round(model.predict(dataX))
+        prediction = np.round(model.predict(to_categorical(dataX, num_classes)))
+        # make prediction
+        tmpPred = np.empty((len(prediction), output_neurons))
+        for i in range(len(prediction)):
+            tmpPred[i] = np.argmax(np.reshape(prediction[i], (output_neurons, num_classes)), 1)
+        prediction = tmpPred
         print_log(f"{currentFuncName()}: return prediction")
         return prediction
     except Exception as err:
@@ -268,10 +291,12 @@ def unlist(x):
         return x
 
 
-def test_model(model, dataX, dataY=[]):
+def test_model(model, parameters, dataX, dataY=[]):
     try:
         print_log(f"running {currentFuncName()}")
-        prediction = prediction_vector(model, dataX)
+        output_neurons = parameters["train_model_settings"]["output_neurons"]
+        num_classes = parameters["train_model_settings"]["num_classes"]
+        prediction = prediction_vector(model, dataX, output_neurons, num_classes)
         if dataY == []:
             print_log(f"np.shape(prediciton) == {np.shape(prediction)}")
             print_log(f"prediction == {prediction}")

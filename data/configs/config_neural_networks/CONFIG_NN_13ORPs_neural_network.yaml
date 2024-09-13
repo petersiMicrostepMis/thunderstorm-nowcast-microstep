@@ -4,7 +4,7 @@ model_parameters:
         other_settings: 5, (3, ) 
         activation: "'relu'"
         kernel_initializer: "'he_uniform'"
-        input_shape: '(39, 1)' #len(data_X[0])
+        input_shape: '(39, 4, 1)' #len(data_X[0])
 
       #- name: MaxPooling2D
       #  other_settings: '(2, 2)'
@@ -17,7 +17,7 @@ model_parameters:
         kernel_initializer: "'he_uniform'"
 
       - name: Dense
-        other_settings: '13' #len(data_Y[0])
+        other_settings: '52' # '13' #len(data_Y[0])
         activation: "'sigmoid'"  #"'softsign'"
 
     optimizer:
@@ -27,10 +27,12 @@ model_parameters:
 
     model_compile:
         optimizer: ''
-        loss: "'binary_crossentropy'"
-        metrics: "['accuracy']"
+        loss: "'binary_crossentropy'"  # "'categorical_crossentropy'"
+        metrics: "['binary_accuracy']"
 
 train_model_settings:
     n_folds: 5
     epochs: 10
     batch_size: 32
+    output_neurons: 13
+    num_classes: 4

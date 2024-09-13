@@ -122,17 +122,28 @@ def load_csv_files(source_path_list, config_yaml, header_list, nan_to_zero=True)
         print_log(f"{currentFuncName()}: Unexpected {err=}, {type(err)=}")
 
 
-def values_in_df_to_classes(dfs, column_list, threshold, val1, val2):
+def values_in_df_to_classes(dfs, column_list, threshold, val1, val2=0):
     try:
         print_log(f"running {currentFuncName()}")
         if not isinstance(dfs, list) and not isinstance(dfs, tuple):
             dfs = (dfs,)
+        threshold = (-np.Inf,) + threshold + (np.Inf,)
         for i in range(len(dfs)):
             for column in column_list:
                 dfs[i][column] = np.float64(dfs[i][column])
                 dfs[i][column][np.isnan(dfs[i][column])] = 0
-                # dealing with only two classes for now
-                dfs[i][column] = np.where(dfs[i][column] >= threshold, val1, val2)
+                # dealing with not only two classes
+                # dfs[i][column] = np.where(dfs[i][column] >= threshold, val1, val2)
+                df_tmp = np.where(dfs[i][column] >= 0, 0, 0)
+                for j in range(len(threshold)-1):
+                    print_log(f"threshold[{j}] == {threshold[j]}")
+                    print_log(f"threshold[{j+1}] == {threshold[j+1]}")
+                    print_log(f"val1[{j}] == {val1[j]}")
+                    df_tmp = df_tmp + np.where((threshold[j] < dfs[i][column]) &
+                                               (dfs[i][column] <= threshold[j+1]), val1[j], 0)
+                    print_log(f"df_tmp = df_tmp + np.where((threshold[{j}] < dfs[{i}][column]) &")
+                    print_log(f"                           (dfs[{i}][column] <= threshold[{j+1}]), {val1[j]}, 0)")
+                dfs[i][column] = df_tmp
         return dfs
     except Exception as err:
         print_log(f"{currentFuncName()}: Unexpected {err=}, {type(err)=}")
@@ -440,7 +451,9 @@ def prepare_data_train(source_path, dest_path, dest_path_train_file, dest_path_t
         d1_files, d2_files, m_files = d1_files_tmp, d2_files_tmp, m_files_tmp
 
         # data to classes
-        threshold, val1, val2 = ast.literal_eval(config_yaml['threshold_value'])
+        # threshold, val1, val2 = ast.literal_eval(config_yaml['threshold_value'])
+        threshold, val1 = ast.literal_eval(config_yaml['threshold_value'])
+        val2 = 0
         d1_files_out = values_in_df_to_classes(d1_files, ast.literal_eval(config_yaml['dataset'][0]['ORP_list']),
                                                threshold, val1, val2)
         d2_files_out = values_in_df_to_classes(d2_files, ast.literal_eval(config_yaml['dataset'][0]['ORP_list']),
@@ -571,7 +584,9 @@ def prepare_data_test(source_path, dest_path, dest_path_test_file, config_yaml):
         m_files, m_headers = load_csv_files(m_source_path_list, config_yaml, m_headers)
 
         # data to classes
-        threshold, val1, val2 = ast.literal_eval(config_yaml['threshold_value'])
+        # threshold, val1, val2 = ast.literal_eval(config_yaml['threshold_value'])
+        threshold, val1 = ast.literal_eval(config_yaml['threshold_value'])
+        val2 = 0
         d_files = values_in_df_to_classes(d_files, ast.literal_eval(config_yaml['ORP_list']), threshold, val1, val2)
         m_files = values_in_df_to_classes(m_files, ast.literal_eval(config_yaml['ORP_list']), threshold, val1, val2)
 
@@ -715,7 +730,9 @@ def prepare_data_predict(source_path, dest_path, dest_path_predict_file, config_
         d1_files, d2_files, m_files = d1_files_tmp, d2_files_tmp, m_files_tmp
 
         # data to classes
-        threshold, val1, val2 = ast.literal_eval(config_yaml['threshold_value'])
+        # threshold, val1, val2 = ast.literal_eval(config_yaml['threshold_value'])
+        threshold, val1 = ast.literal_eval(config_yaml['threshold_value'])
+        val2 = 0
         d1_files_out = values_in_df_to_classes(d1_files, ast.literal_eval(config_yaml['dataset'][0]['ORP_list']),
                                                threshold, val1, val2)
         d2_files_out = values_in_df_to_classes(d2_files, ast.literal_eval(config_yaml['dataset'][0]['ORP_list']),
@@ -724,38 +741,26 @@ def prepare_data_predict(source_path, dest_path, dest_path_predict_file, config_
         #                                       threshold, val1, val2)
 
         # indices for train, test and validation
-        print_log("1")
         print_log(f"d1_files_out == {d1_files_out}")
         print_log(f"d1_files_out[0] == {d1_files_out[0]}")
         print_log(f"d1_files_out[0]['timestamp'] == {d1_files_out[0]['timestamp']}")
         print_log(f"config_yaml['predict']['seasons'] == {config_yaml['predict']['seasons']}")
         predict_i = get_proper_dates_indices(d1_files_out[0]['timestamp'] / 1000, config_yaml['predict']['seasons'])
 
-        print_log("1.5")
         predict_d1 = [d1_files_out[i].iloc[predict_i].reset_index(drop=True) for i in range(len(d1_files_out))]
-        print_log("2")
         headers_d1 = [[d1_headers[i], ] * len(d1_files_out[i].columns) for i in range(len(d1_headers))]
-        print_log("3")
         predict_d2 = [d2_files_out[i].iloc[predict_i].reset_index(drop=True) for i in range(len(d2_files_out))]
-        print_log("4")
         headers_d2 = [[d2_headers[i], ] * len(d2_files_out[i].columns) for i in range(len(d2_headers))]
-        print_log("5")
         headers = list()
 
-        print_log("6")
         for i in range(len(headers_d1)):
             headers = headers + headers_d1[i]
-        print_log("7")
         for i in range(len(headers_d2)):
             headers = headers + headers_d2[i]
 
         # save split data
-        print_log("8")
         predict = pd.concat(predict_d1 + predict_d2, axis=1)
-        print_log("9")
         predict.columns = [headers, predict.columns]
-        print_log("10")
         predict.to_csv(dest_path_predict_file, index=False)
-        print_log("11")
     except Exception as err:
         print_log(f"{currentFuncName()}: Unexpected {err=}, {type(err)=}")
