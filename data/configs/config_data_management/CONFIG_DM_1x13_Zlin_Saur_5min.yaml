@@ -4,7 +4,7 @@ input_data_sources: ('cappi2000', 'vil')
 measurements: 'measurements'
 time_tolerance: 60000  # in milliseconds
 forecast_time: 5  # in minutes
-threshold_value: '(17, 1, 0)'  # first - threshold value, second - more or equal than threshold, third - less than threshold
+threshold_value: '((17,), (0, 1))' # first list - threshold values, second list - classes
 use_columns: '("timestamp", "forecast")'
 train:
     seasons:

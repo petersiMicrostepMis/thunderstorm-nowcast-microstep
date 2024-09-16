@@ -4,7 +4,7 @@ model_parameters:
         other_settings: 5, (3, ) 
         activation: "'relu'"
         kernel_initializer: "'he_uniform'"
-        input_shape: '(3, 1)' #'(39, 1)' #len(data_X[0])
+        input_shape: '(3, 1, 1)' #'(39, 1)' #len(data_X[0])
 
       #- name: MaxPooling2D
       #  other_settings: '(2, 2)'
