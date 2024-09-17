@@ -96,93 +96,105 @@ def metrics_ACC(table):
 def metrics_F1(table):
     # for binary classification
     print_log(f"running {currentFuncName()}")
-    # a, b, c, d = table2abcd(table)
-    # return zero_denominator(a, a + 0.5 * (b + c))
-    F1 = list()
-    for i in range(np.shape(table)[0]):
-        a = table[i][i]
-        row = 0
-        for j in range(np.shape(table)[0]):
-            row = row + table[j][i]
-        bc = np.sum(table[i]) + row - 2*a
-        F1.append(zero_denominator(a, a + 0.5*(bc)))
-    return F1
+    if np.shape(table)[0] == 2:
+        a, b, c, d = table2abcd(table)
+        return zero_denominator(a, a + 0.5 * (b + c))
+    else:
+        F1 = list()
+        for i in range(np.shape(table)[0]):
+            a = table[i][i]
+            row = 0
+            for j in range(np.shape(table)[0]):
+                row = row + table[j][i]
+            bc = np.sum(table[i]) + row - 2*a
+            F1.append(zero_denominator(a, a + 0.5*(bc)))
+        return F1
 
 
 def metrics_CSI(table):
     # for binary classification
     print_log(f"running {currentFuncName()}")
-    # a, b, c, d = table2abcd(table)
-    # return zero_denominator(a, a + b + c)
-    CSI = list()
-    for i in range(np.shape(table)[0]):
-        a = table[i][i]
-        row = 0
-        for j in range(np.shape(table)[0]):
-            row = row + table[j][i]
-        bc = np.sum(table[i]) + row - 2*a
-        CSI.append(zero_denominator(a, a + bc))
-    return CSI
+    if np.shape(table)[0] == 2:
+        a, b, c, d = table2abcd(table)
+        return zero_denominator(a, a + b + c)
+    else:
+        CSI = list()
+        for i in range(np.shape(table)[0]):
+            a = table[i][i]
+            row = 0
+            for j in range(np.shape(table)[0]):
+                row = row + table[j][i]
+            bc = np.sum(table[i]) + row - 2*a
+            CSI.append(zero_denominator(a, a + bc))
+        return CSI
 
 
 def metrics_POD(table):
     # for binary classification
     print_log(f"running {currentFuncName()}")
-    # a, b, c, d = table2abcd(table)
-    # return zero_denominator(a, a + c)
-    POD = list()
-    for i in range(np.shape(table)[0]):
-        a = table[i][i]
-        c = np.sum(table[i]) - a  # ?
-        POD.append(zero_denominator(a, a + c))
-    return POD
+    if np.shape(table)[0] == 2:
+        a, b, c, d = table2abcd(table)
+        return zero_denominator(a, a + c)
+    else:
+        POD = list()
+        for i in range(np.shape(table)[0]):
+            a = table[i][i]
+            c = np.sum(table[i]) - a  # ?
+            POD.append(zero_denominator(a, a + c))
+        return POD
 
 
 def metrics_MSI(table):
     # for binary classification
     print_log(f"running {currentFuncName()}")
-    # a, b, c, d = table2abcd(table)
-    # return zero_denominator(c, a + c)
-    MSI = list()
-    for i in range(np.shape(table)[0]):
-        a = table[i][i]
-        c = np.sum(table[i]) - a  # ?
-        MSI.append(zero_denominator(c, a + c))
-    return MSI
+    if np.shape(table)[0] == 2:
+        a, b, c, d = table2abcd(table)
+        return zero_denominator(c, a + c)
+    else:
+        MSI = list()
+        for i in range(np.shape(table)[0]):
+            a = table[i][i]
+            c = np.sum(table[i]) - a  # ?
+            MSI.append(zero_denominator(c, a + c))
+        return MSI
 
 
 def metrics_FAR(table):
     # for binary classification
     print_log(f"running {currentFuncName()}")
-    # a, b, c, d = table2abcd(table)
-    # return zero_denominator(b, a + b)
-    FAR = list()
-    for i in range(np.shape(table)[0]):
-        a = table[i][i]
-        row = 0
-        for j in range(np.shape(table)[0]):
-            row = row + table[j][i]
-        b = row - a
-        FAR.append(zero_denominator(b, a + b))
-    return FAR
+    if np.shape(table)[0] == 2:
+        a, b, c, d = table2abcd(table)
+        return zero_denominator(b, a + b)
+    else:
+        FAR = list()
+        for i in range(np.shape(table)[0]):
+            a = table[i][i]
+            row = 0
+            for j in range(np.shape(table)[0]):
+                row = row + table[j][i]
+            b = row - a
+            FAR.append(zero_denominator(b, a + b))
+        return FAR
 
 
 def metrics_HSS(table):
     # for binary classification
     print_log(f"running {currentFuncName()}")
-    # a, b, c, d = table2abcd(table)
-    # return zero_denominator(2 * (a * d - b * c), (a + c) * (c + d) + (a + b) * (b + d))
-    HSS = list()
-    for i in range(np.shape(table)[0]):
-        a = table[i][i]
-        row = 0
-        for j in range(np.shape(table)[0]):
-            row = row + table[j][i]
-        b = row - a
-        c = np.sum(table[i]) - a
-        d = np.sum(np.sum(table)) - (a + b + c)
-        HSS.append(zero_denominator(2 * (a * d - b * c), (a + c) * (c + d) + (a + b) * (b + d)))
-    return HSS
+    if np.shape(table)[0] == 2:
+        a, b, c, d = table2abcd(table)
+        return zero_denominator(2 * (a * d - b * c), (a + c) * (c + d) + (a + b) * (b + d))
+    else:
+        HSS = list()
+        for i in range(np.shape(table)[0]):
+            a = table[i][i]
+            row = 0
+            for j in range(np.shape(table)[0]):
+                row = row + table[j][i]
+            b = row - a
+            c = np.sum(table[i]) - a
+            d = np.sum(np.sum(table)) - (a + b + c)
+            HSS.append(zero_denominator(2 * (a * d - b * c), (a + c) * (c + d) + (a + b) * (b + d)))
+        return HSS
 
 
 def metrics_MAE(table):

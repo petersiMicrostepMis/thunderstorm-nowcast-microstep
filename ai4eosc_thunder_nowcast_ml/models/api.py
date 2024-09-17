@@ -672,6 +672,16 @@ def train(**kwargs):
             print_log(f"open({output_dir_name}.zip, 'rb', buffering=0)", log_file=None)
             return open(output_dir_name + ".zip", 'rb', buffering=0)
 
+    def _write_mlflow_metrics(stats_key, s):
+        tmp = stat.unlist_all(stats_key)
+        if isinstance(tmp, (int, float, str)):
+            print_log(f"mlflow.log_metric({s} {key}, {tmp})")
+            mlflow.log_metric(s + " " + key, tmp)
+        elif isinstance(tmp, (list, tuple)):
+            for i, m in enumerate(tmp):
+                print_log(f"mlflow.log_metric({s} {key}, {m}, step={i})")
+                mlflow.log_metric(s + " " + key, m, step=i)
+
     try:
         # prepare log file
         f = open(cly.LOG_FILE_PATH, "w")
@@ -903,7 +913,9 @@ def train(**kwargs):
         print_log(f"np.shape(contingency_table_trn) == {np.shape(contingency_table_trn)}")
         print_log(f"contingency_table_val == {contingency_table_val}")
 
+        print_log(f"ino_tr['statistics'] == {ino_tr['statistics']}")
         for st in ino_tr['statistics']:
+            print_log(f"st == {st}")
             if st['stat'] == "contingency_table":
                 stats_trn.update({"cont_table": contingency_table_trn})
                 stats_tst.update({"cont_table": contingency_table_tst})
@@ -998,20 +1010,11 @@ def train(**kwargs):
             print_log(f"mlflow.log_params({nnw_tr['train_model_settings']})")
             mlflow.log_params(nnw_tr['train_model_settings'])
             for key in stats_trn:
-                tmp = stat.unlist_all(stats_trn[key])
-                if isinstance(tmp, (int, float, str)):
-                    print_log(f"mlflow.log_metric(train {key}, {tmp})")
-                    mlflow.log_metric("train " + key, tmp)
+                _write_mlflow_metrics(stats_trn[key], "train")
             for key in stats_tst:
-                tmp = stat.unlist_all(stats_tst[key])
-                if isinstance(tmp, (int, float, str)):
-                    print_log(f"mlflow.log_metric(test {key}, {tmp})")
-                    mlflow.log_metric("test " + key, tmp)
+                _write_mlflow_metrics(stats_tst[key], "test")
             for key in stats_val:
-                tmp = stat.unlist_all(stats_val[key])
-                if isinstance(tmp, (int, float, str)):
-                    print_log(f"mlflow.log_metric(validation {key}, {tmp})")
-                    mlflow.log_metric("validation " + key, tmp)
+                _write_mlflow_metrics(stats_val[key], "validation")
 
         message = {"status": "ok",
                    "training": []}
