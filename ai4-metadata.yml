@@ -21,6 +21,6 @@ categories:
   - AI4 inference
   - AI4 pre trained
 libraries:
-  - Tensorflow
+  - TensorFlow
 data-type:
   - Image
