@@ -1,0 +1,26 @@
+metadata_version: 2.0.0
+title: Thunderstorm nowcast (MicroStep-MIS)
+summary: Thunderstorm nowcast based on radar data (for agrometeorology)
+description: |-
+  Thunderstorm nowcast based on radar data (for agrometeorology).
+dates:
+  created: '2023-09-07'
+  updated: '2024-09-27'
+links:
+  source_code: https://github.com/MicroStep-MIS/thunderstorm-nowcast-microstep
+  docker_image: ai4oshub/thunderstorm-nowcast-microstep
+  ai4_template: ai4-template/1.9.9
+  dataset_url: https://share.services.ai4os.eu/index.php/apps/files/?dir=/EOSC_runs/data&fileid=4289691
+  training_files_url: https://share.services.ai4os.eu/index.php/apps/files/?dir=/EOSC_runs/data&fileid=4289691
+  cite_url: https://sandbox.zenodo.org/doi/10.5072/zenodo.56169
+tags:
+  - deep learning
+tasks:
+  - Computer Vision
+categories:
+  - AI4 inference
+  - AI4 pre trained
+libraries:
+  - Tensorflow
+data-type:
+  - Image
