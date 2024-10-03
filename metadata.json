@@ -1,4 +1,5 @@
 {
+  "metadata_version": "2.0.0",
   "title": "Thunderstorm nowcast (MicroStep-MIS)",
   "summary": "Thunderstorm nowcast based on radar data (for agrometeorology)",
   "description": [
@@ -6,9 +7,29 @@
     "Write additional information for your users (how to predict, how to retrain,",
     "dataset description, training description, etc)."
   ],
+  "libraries": ["Keras"],
+  "tasks": ["Time Series", "Classification", "Other"],
+  "categories": ["AI4 trainable", "AI4 pre trained", "AI4 inference"],
+  "data-type": ["Tabular"],
+  "tags": ["deep learning", "convective rainfall warning"],
+  "dates": {
+    "created": "2023-09-07",
+    "updated": "2024-10-03"
+  },
+  "links": {
+    "source_code": "https://dashboard.cloud.ai4eosc.eu/marketplace/modules/thunderstorm-nowcast-microstep",
+    "docker_image": "ai4oshub/thunderstorm-nowcast-microstep",
+    "weights": "https://github.com/MicroStep-MIS/thunderstorm-nowcast-microstep/tree/main/data/raw/model.h5",
+    "ai4_template": "ai4-template/1.9.9"
+  }
   "keywords": [
     "docker",
-    "api-v2"
+    "api-v2",
+    "keras",
+    "trainable",
+    "pre-trained",
+    "machine learning",
+    "severe weather warning"
   ],
   "license": "MIT",
   "date_creation": "2023-09-07",
@@ -16,10 +37,10 @@
   "dataset_url": "https://share.services.ai4os.eu/index.php/apps/files/?dir=/EOSC_runs/data&fileid=4289691",
   "cite_url": "https://sandbox.zenodo.org/doi/10.5072/zenodo.56169",
   "sources": {
-    "dockerfile_repo": "https://github.com/MicroStep-MIS/thunderstorm-nowcast-microstep",
-    "docker_registry_repo": "ai4oshub/thunderstorm-nowcast-microstep",
-    "code": "https://github.com/MicroStep-MIS/thunderstorm-nowcast-microstep",
-    "ai4_template": "ai4-template/1.9.9"
+     "source_code": "https://dashboard.cloud.ai4eosc.eu/marketplace/modules/thunderstorm-nowcast-microstep",
+     "docker_image": "ai4oshub/thunderstorm-nowcast-microstep",
+     "weights": "https://github.com/MicroStep-MIS/thunderstorm-nowcast-microstep/tree/main/data/raw/model.h5",
+     "ai4_template": "ai4-template/1.9.9"
   },
   "continuous_integration": {
     "build_status_badge": "https://jenkins.services.ai4os.eu/buildStatus/icon?job=AI4OS-hub/thunderstorm-nowcast-microstep/main",
